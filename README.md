@@ -17,6 +17,9 @@
 2.  xxxx
 3.  xxxx
 
+#### 历史版本
+2022/12/30 AntonaStandard-v-1.0.0 添加了常用异常类库Exception.h和事件委托类库Delegate.h
+
 #### 参与贡献
 
 1.  Fork 本仓库
