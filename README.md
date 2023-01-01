@@ -20,6 +20,8 @@
 
 2023/1/1     AntonaStandard-v-1.0.1 更新了Delegate.h详细请看具体文档
 
+2023/1/1	 AntonaStandard-v-1.1.0 更新了Delegate.h详细请看具体文档
+
 #### 参与贡献
 
 1.  Fork 本仓库
