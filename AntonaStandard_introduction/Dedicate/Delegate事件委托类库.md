@@ -10,33 +10,35 @@
 | ------- | ------------------------------------------------------------ | ---------- |
 | v-1.0.0 | 完成事件委托基本功能可以满足多参数函数的委托                 | 2022/12/29 |
 | v-1.0.1 | 修改createNew和getSelf的命名为copy和clone使之更加满足原型模式的命名<br />修复删除委托(-=)中未找到目标时传入的参数内存泄漏的问题 | 2022/12/30 |
-| v-1.1.0 | 参考了包装器是他的::function的模板写法，解决了原来Delegate<void,void>增加无返回值无参数类型（void(void)）型报错的问题，现在正确的写法是Delegate<void()>或Delegate<void(void)> | 2023/1/1   |
+| v-1.1.0 | - 参考了包装器是他的::function的模板写法，解决了原来Delegate<void,void>增加无返回值无参数类型（void(void)）型报错的问题，现在正确的写法是Delegate<void()>或Delegate<void(void)><br />\- 添加了copy的无参数构造版本,修改了左值引用复制构造函数和左值引用赋值运算符的函数体<br />\- 标准库std::function与我们的BaseFuncPointerContainer实现办法类似，暂时不考虑用std::function替换我们的架构 | 2023/1/1   |
+| v-2.0.0 | -通过std::remove_reference实现了将引用转化成值类型的,使得返回值为引用类型的函数的返回值得以保存<br />-添加了事件委托Delegate的返回值type具体化版本，使得返回值为void的事件委托不返回线性表<br />\- 由于返回值存到线性表中有时间成本，为返回值非void的事件委托添加了call_without_return接口，以无返回值的形式调用 | 2023/1/1   |
 
 
 
 ## 项目目的
 
 - 实现类似C#中的事件委托机制，设置一个可以绑定多个函数同时执行的类或函数（单线程内）
-- 暂时不考虑事件委托的返回值，因为在C++中存储类型的引用是一个问题，如果事件委托添加的函数返回值是引用，在现有体系下会导致错误
 - 参考链接：[(二)_YzlCoder的博客-CSDN博客_c++委托模式](https://blog.csdn.net/y1196645376/article/details/51416043)  
-  - 项目的主体与参考链接基本相同，不过参考的代码存在一些问题，可以参考我在参考链接的文章中的评论，另外我用了一种比较巧妙的方式实现了复制构造函数
 - 详细的介绍也可以看看我的博客
   - [【项目三】C++实现事件委托_学艺不精的Антон的博客-CSDN博客](https://blog.csdn.net/yyy11280335/article/details/128488238?spm=1001.2014.3001.5501) 
+  - [(1条消息) 【项目三 （利用remove_reference将引用类型转化为值类型，从而实现对任何非void类型函数的返回值存储）】C++实现事件委托（完全体）_学艺不精的Антон的博客-CSDN博客](https://blog.csdn.net/yyy11280335/article/details/128515629?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"128515629"%2C"source"%3A"yyy11280335"}) 
 
 
 
 ## 项目原理
 
-- 使用多态和函数指针，分别封装普通函数，静态函数（普通函数和静态函数的函数指针属性相同，可以共用一个封装类）和成员函数的函数指针，最后通过Delegate类通过多态存储不同类型的指针
+- 使用多态和函数指针，分别封装普通函数，静态函数（普通函数和静态函数的函数指针属性相同，可以共用一个封装类）和成员函数的函数指针，最后通过Delegate类多态存储不同类型的指针
   - 为了能删除对应的函数指针，应当添加一个比较接口
 - 通过可变模板参数可以实现多参数的函数的委托
 - 利用**原型模式**，使得函数指针容器的复制不受具体类型的限制
+- 使用模板结构体remove_reference,通过不同的具体化将引用类型转化成值类型，使得对函数返回值的存储成为可能
 
 ## 项目依赖
 
 - C++11标准
 - AntonaStandard::NotFound_Error （#include "Exception.h"） 
 - std::type_info
+- std::vector
 - std::list
 
 ## 平台（参考）
@@ -103,130 +105,126 @@ Delegate o--> BaseFuncPointerContainer
 
 ## 相关演示
 
-- 创建事件委托
+- 首先声明定义几个类
 
 ```cpp
-// 注意引入头文件#include "Delegate"
-	// 创建一个接收无返回值无参数的函数的事件委托
-using namespace AntonaStandard;
-Delegate<void(void)> v_v_del;					// Delegate<void()>可以，但是Delegate<void>不可以
-	// 创建一个接收int返回值无参数的事件委托
-Delegate<int,int> i_i_del;					// 当前版本暂时不支持对有返回值的函数的返回值存储功能，因此所有的返回值将被丢弃
-	// 创建一个接收int返回值无参数的事件委托
-Delegate<int> i_v_del;
-	// 创建一个接收void返回值，int引用的事件委托
-Delegate<void,int&> v_iq_del;
-	// 创建一个int&返回值，int&参数的事件委托
-Delegate<int&,int&> iq_iq_del;
-```
-
-- 声明函数
-
-```cpp
-// 声明如下两个类
 class A{
 public:
-    void m_func_a_v_v(){
-        cout<<"A的非静态无返回值无参数成员函数"<<endl;
+    static int s_i_v_A(){
+        cout<<"int返回值无参数A的静态函数"<<endl;
+        return 10;
     }
-    static void s_m_func_a_v_v(){
-        cout<<"A的静态无返回值无参数成员函数"<<endl;
+    int i_v_A(){
+        cout<<"int返回值无参数A的非静态函数"<<endl;
+        return 11;
     }
-    int& m_func_a_iq_iq(int& value){
-        cout<<"A的非静态int&返回值int&参数成员函数 "<<value<<endl;
-        return value;
-    }
+
 };
+int i_v(){
+    cout<<"int返回值无参数普通函数"<<endl;
+    return 12;
+}
 class B{
 public:
-    void m_func_b_v_v(){
-        cout<<"B的非静态无返回值无参数成员函数"<<endl;
+    static void s_v_v_B(){
+        cout<<"无返回值无参数B的静态函数"<<endl;
     }
-    static int& s_m_func_b_iq_iq(int& value){
-        cout<<"B的静态int&返回值int&参数成员函数 "<<value<<endl;
-        return value;
+    void v_v_B(){
+        cout<<"无返回值无参数B的非静态函数"<<endl;
     }
+};
+void v_v(){
+    cout<<"无返回值无参数的普通函数"<<endl;
 }
-// 声明两个普通函数
-void n_func_v_v(){
-    cout<<"无返回值无参数普通函数"<<endl;
+
+class C{
+public:
+    static int& s_iq_iq_C(int& v){
+        cout<<"无返回值无参数C的静态函数 "<<v<<endl;
+        return v;
+    }
+    int& iq_iq_C(int& v){
+        cout<<"无返回值无参数C的非静态函数 "<<v<<endl;
+        return v;
+    }
+};
+int& iq_iq(int& v){
+    cout<<"无返回值无参数的普通函数 "<<v<<endl;
+    return v;
 }
-int& n_func_iq_iq(int& value){
-    cout<<"int&返回值int&参数普通函数 "<<value<<endl;
-    return value;
-}
+```
+
+- 实例化上面声明定义的类
+
+```cpp
+A a;
+B b;
+c c;
+```
+
+- 实例化相应的委托类
+
+```cpp
+Delegate<int(void)> del;
+Delegate<void()> del1;
+Delegate<int&(int&)> del2;
 ```
 
 - 添加委托
 
 ```cpp
-// 创建类
-A a;
-B b;
+del += newDelegate(A::s_i_v_A);
+del += newDelegate(a,a.i_v_A);
+del += newDelegate(i_v);
 
-v_v_del += newDelegate(n_func_v_v);			// 添加无返回，无参数普通函数
-v_v_del += newDelegate(a,a.m_func_a_v_v);	// 添加无返回，无参数a的非静态成员函数
-v_v_del += newDelegate(b,b.m_func_b_v_v);	// 添加无返回，无参数b的非静态成员函数
-v_v_del += newDelegate(A::s_m_func_a_v_v);	// 添加无返回，无参数a的静态成员函数
+del1 += newDelegate(B::s_v_v_B);
+del1 += newDelegate(b,b.v_v_B);
+del1 += newDelegate(v_v);
 
-iq_iq_del += newDelegate(n_func_iq_iq);			// int&返回值int&参数的普通函数
-iq_iq_del += newDelegate(a,a.m_func_a_iq_iq);	// int&返回值int&参数a的非静态成员函数
-iq_iq_del += newDelegate(B::s_m_func_b_iq_iq);	// int&返回值int&参数b的静态成员函数
-
-// 实例对象的位置也可以写成实例对象的指针(有对应的重载版本)
-// v_v_del += newDelegate(&a,a.m_func_a_v_v);
+del2 += newDelegate(C::s_iq_iq_C);
+del2 += newDelegate(c,c.iq_iq_C);
+del2 += newDelegate(iq_iq);
 ```
 
 - 调用委托
 
 ```cpp
-v_v_del();
-/*输出
-c无返回值无参数普通函数
-A的非静态无返回值无参数成员函数
-B的非静态无返回值无参数成员函数
-A的静态无返回值无参数成员函数
-*/
-
-int value = 666;
-iq_iq_del(value);
-/*
-int&返回值int&参数普通函数 666
-A的非静态int&返回值int&参数成员函数 666
-B的静态int&返回值int&参数成员函数 666
-*/
+vector<int> vec = del();			// 返回值为int，无参数列表调用演示
+cout<<"--------------"<<endl;
+del.call_without_return();			// 无返回值调用办法
+for(int i = 0;i<vec.size();++i){
+    cout<<vec[i]<<" ";				// 查看保存的返回值
+}
+cout<<endl<<"--------------"<<endl;
+del1();								// 无返回值，无参数调用演示
+cout<<endl<<"--------------"<<endl;
+int x = 666;
+vector<int> vec2 = del2(x);			// 返回值为int,int&参数调用演示
+for(int i = 0;i<vec2.size();++i){
+    cout<<vec2[i]<<" ";
+}
 ```
 
-- 删除委托
+- 输出
 
 ```cpp
-v_v_del -= newDelegate(n_func_v_v);
-v_v_del -= newDelegate(a,a.m_func_a_v_v);
+int返回值无参数A的静态函数
+int返回值无参数A的非静态函数
+int返回值无参数普通函数
+--------------
+int返回值无参数A的静态函数
+int返回值无参数A的非静态函数
+int返回值无参数普通函数
+10 11 12
+--------------
+无返回值无参数B的静态函数
+无返回值无参数B的非静态函数
+无返回值无参数的普通函数
 
-// 如果尝试删除不存在的委托，会抛出异常(AntonaStandard::NotFound_Error)
+--------------
+无返回值无参数C的静态函数 666
+无返回值无参数C的非静态函数 666
+无返回值无参数的普通函数 666
+666 666 666
 ```
 
-- 查看委托个数,判断委托是否为空，清除所有委托
-
-```cpp
-// 查看委托个数
-v_v_del.size()
-    
-// 判断委托是否为空
-v_v_del.empty()
-
-// 清除所有委托
-v_v_del.clear()
-```
-
-- 左值引用复制构造
-
-```cpp
-Delegate<void()> v_v_del_1 = v_v_del;
-```
-
-- 右值引用移动构造
-
-```cpp
-Delegate<void()> v_v_del_2 = std::move(v_v_del);		// 将v_v_del转化成右值引用，这样可以调用内部的list的右值移动构造函数，直接将v_v_del的链表管理权限交给v_v_del_2防止额外开辟内存，v_v_del变成将亡值
-```
