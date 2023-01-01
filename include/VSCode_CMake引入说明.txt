@@ -1,0 +1,30 @@
+<<<<<<< HEAD
+请包含文件路径：
+
+c_cpp_properties.json:
+"includePath": [
+        "${workspaceFolder}/**",
+        "D:\\AntonaCodes\\MyCodesFiles\\Cpp_projects\\Terminal_projects\\AntonaStandard\\include"
+],
+
+
+CMakeLists.txt:
+set(IncludePath "D:/AntonaCodes/MyCodesFiles/Cpp_projects/Terminal_projects/AntonaStandard/include")
+include_directories(${IncludePath})
+
+=======
+请包含文件路径：
+
+c_cpp_properties.json:
+"includePath": [
+        "${workspaceFolder}/**",
+        "D:\\AntonaCodes\\MyCodesFiles\\Cpp_projects\\Terminal_projects\\AntonaStandard\\include"
+],
+
+
+CMakeLists.txt:
+set(IncludePath "D:/AntonaCodes/MyCodesFiles/Cpp_projects/Terminal_projects/AntonaStandard/include")
+include_directories(${IncludePath})
+
+>>>>>>> ecea601 (AntonaStandard-1.0.1版本修改)
+VSCode插件C/C++ Configureation 设置包含路径
