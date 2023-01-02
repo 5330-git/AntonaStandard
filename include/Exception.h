@@ -1,16 +1,20 @@
 #ifndef EXCEPTION_H 
 #define EXCEPTION_H
 #include <stdexcept>
-namespace AntonaStandard{
-	#define Exception_VERSION "1.1.0"
-	#define Exception_ESIT_TIME "2022/12/29"
-	#define Exception_AUTHOR "Anton"
-}
+
+#define AntonaStandard_Exception_VERSION "1.1.1"
+#define AntonaStandard_Exception_EDIT_TIME "2022/12/29"
+#define AntonaStandard_Exception_AUTHOR "Anton"
+
+
 /*
 *   Decoded by utf-8
 *   2022/12/19  1.0.0 初步实现
 *	2022/12/19  1.1.0 添加NotFound_Error 用于标记未遍历到目标值的错误
+*	2022/1/2	1.1.1 更改了项目的宏信息
 */
+
+
 namespace AntonaStandard{
 	class  Uninitialization_Error;
 	class  WrongArgument_Error;

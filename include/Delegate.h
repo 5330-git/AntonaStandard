@@ -6,11 +6,11 @@
 #include <stdexcept>
 #include "Exception.h"
 
-namespace AntonaStandard{
-    #define Delegate_VERSION "2.0.0"
-    #define Delegate_EDIT_TIME "2023/1/1"
-    #define Delegate_AUTHOR "Anton"
-}
+
+#define AntonaStandard_Delegate_VERSION "2.0.0"
+#define AntonaStandard_Delegate_EDIT_TIME "2023/1/1"
+#define AntonaStandard_Delegate_AUTHOR "Anton"
+
 /*
 *   Decoded by utf-8
 *   2022/12/29  1.0.0 - 初步实现事件委托，对于有返回值的函数，暂时采取其返回值弃用的操作
@@ -22,7 +22,7 @@ namespace AntonaStandard{
 *   2023/1/1    2.0.0 - 通过std::remove_reference实现了将引用转化成值类型的,使得返回值为引用类型的函数的返回值得以保存
 *                     - 添加了事件委托Delegate的返回值type具体化版本，使得返回值为void的事件委托不返回线性表
 *                     - 由于返回值存到线性表中有时间成本，为返回值非void的事件委托添加了call_without_return接口，以无返回值的形式调用
-*
+*   2023/1/2    2.0.1 - 修改了项目的宏信息
 *
 *
 *
