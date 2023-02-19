@@ -26,6 +26,8 @@
 
 2023/1/11   AntonaStandard-v-3.0.0 添加迭代器工具库Antona_foreach.h详细请看具体文档
 
+2023/2/19   AntonaStandard-v-4.0.0 添加自动结点类库详细请看具体文档
+
 #### 原作者博客
 
 - [学艺不精的Антон的博客_CSDN博客](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 

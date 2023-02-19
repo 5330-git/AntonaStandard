@@ -24,6 +24,8 @@
 
 2023/1/11   AntonaStandard-v-3.0.0 Add file **Antona_foreach.h** Details in AntonaStandard_introduction
 
+2023/2/19   AntonaStandard-v-4.0.0 Add file **AutoNode.h,AutoNode.cpp** Details in AntonaStandard_introduction
+
 #### Author's Blog 
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
