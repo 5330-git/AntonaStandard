@@ -10,6 +10,8 @@
 | ------- | ----------------------------------------------- | ---------- |
 | v-1.0.0 | 初步实现                                        | 2022/12/19 |
 | v-1.1.0 | 添加NotFound_Error 用于标记未遍历到目标值的错误 | 2022/12/19 |
+| v-1.1.1 | 更改项目宏信息                                  | 2022/1/2   |
+| v-1.2.0 | 添加Conflict_Error 用于处理系统中出现的冲突错误 | 20222/24   |
 
 
 
@@ -43,6 +45,7 @@
 | SystemCollapse_Error    | std::runtime_error | 系统崩溃异常                                           |
 | NullPointer_Error       | std::logic_error   | 空指针异常，一般是尝试访问空指针时抛出                 |
 | NotFound_Error          | std::logic_error   | 未找到异常，当遍历查找一个目标值但未找到可以抛出该异常 |
+| Conflict_Error          | std::logic_error   | 当尝试向一个序列中插入已有的记录时，可能会触发该异常   |
 
 
 

@@ -6,9 +6,10 @@
 
 ## 项目版本
 
-| 版本号  | 版本描述             | 时间      |
-| ------- | -------------------- | --------- |
-| v-1.0.0 | - 初步实现自动节点， | 2023/2/19 |
+| 版本号  | 版本描述                                                  | 时间      |
+| ------- | --------------------------------------------------------- | --------- |
+| v-1.0.0 | - 初步实现自动节点，                                      | 2023/2/19 |
+| v-2.0.0 | - 修改邻居的存储方式，添加浅复制（不复制邻居的函数）clone | 2023/2/25 |
 
 
 
@@ -19,17 +20,17 @@
 
 ## 项目原理
 
-- 使用**原型模式**，其中的克隆（clone）方法可以获取当前派生类型的this指针（通过返回值协变进行类型转换）。也就是说通过clone()方法就可以访问派生类新增的方法。
-- 我们的基类是一个抽象类（接口），表示一个结点单元，需要其派生类去实现。每个结点单元中存在一个线性表（**std::vector\<AutoNode*\>**） ,这意味着任意一个派生自抽象类AutoNode的结点单元都可以相互连接。选择vector存储的原因是遍历速度非常快，同时为了降低删除结点的时间复杂度，我们采用的是**覆盖式的删除办法**，即要删除某个结点时需要用末尾的元素覆盖它然后将vectord的末尾弹出。删除掉一个结点不会影响剩下结点的遍历，但是顺序会改变
-  - ![删除演示（remove）](images/删除演示.png)  
-  - 添加结点时不会考察是否重复，这意味着两个结点之间可能有多个连接
-- 实现起来足够简单，因此其可扩展性较高
+- 使用**原型模式**，其中的克隆（clone）和拷贝（copy）方法允许我们在不知道具体的实例的情况下获取该对象的浅复制和深复制实例。我们的基类是一个抽象类（接口），表示一个结点单元，需要其派生类去实现。每个结点单元中存在一个线性表（**std::map\<type_Key,AutoNode\<type_Key\>\*\>**） ,这意味着任意一个派生自抽象类AutoNode的相同类型键类型的结点单元可以单向连接。 
+
+  
+
+  
 
 ## 项目依赖
 
 - AntonaStandard::NotFound_Error 未找到异常
-- std::overflow_error
-- std::vector\<AutoNode*\> 
+- AntonaStandard:Conflict_Error 冲突异常
+- std::map
 
 ## 平台（参考）
 
@@ -41,13 +42,19 @@
 
 - ```mermaid
   classDiagram
-  class AutoNode{
+  class AutoNode~type_Key~{
   ~Abstract~
-  # vector~AutoNode*~ neighbors
+  # map~type_Key,AutoNode*~ neighbors
+  + abstract AutoNode* clone()
   + abstract AutoNode* copy()
-  + virtual AutoNode* remove(size_t index)
-  + virtual void remove(AutoNode& node)
+  + virtual AutoNode* remove(const type_Key& k)
   + virtual void add(AutoNode* node_ptr)
+  + virtual AutoNode::iterator begin()
+  + virtual AutoNode::iterator end()
+  + virtual bool empty()
+  + virtual size_t size()
+  + virtual const type_Key& getKey()
+  + virtual AutoNode& operator[](const type_Key& k)
   }
   ```
 
@@ -66,255 +73,180 @@
 
 - 由于重写了运算符 **operator[]** 允许开发者快速访问一个结点的邻居结点以及它的邻居的邻居
 
+- 已经重写了虚函数**copy**，它可以以递归的方式自动拷贝所有的邻居，但是前提需要开发者重写**clone**函数，实现叶子结点的拷贝
+
 - **用AutoNode实现树** 
-
-  - ```cpp
-    #include <iostream>
-    #include <string>
-    #include "AutoNode.h"
-    #include <queue>
-    using namespace std;
-    using namespace AntonaStandard;
-    class TreeNode:public AutoNode{
-    private:
-        string name;
-    public:
-        inline string& getName(){
-            return this->name;
-        }
-        virtual TreeNode* copy()override{
-            if(this->empty()){
-                // 递归出口，如果是叶子结点，则不需要继续向下构造
-                return new TreeNode(this->name);
-            }
-            TreeNode* ret_ptr = new TreeNode(this->name);
-    
-            for(auto& i:*this){
-                // 递归式拷贝
-                ret_ptr->add(i->copy());
-            }
-            return ret_ptr;
-        }
-        explicit TreeNode(string n):name(n){};
-        virtual ~TreeNode(){
-            for(auto& i:*this){
-                delete i;
-                i = nullptr;
-            }
-            cout<<this->getName()<<"删除完毕"<<endl;
-        }
-    };
-    void print_tree(TreeNode* root,queue<AutoNode*>& queue){
-        // 广度优先遍历
-        queue.push(root);
-        while(queue.size()){
-            // 将队列首节点中所有的子节点都放到队列中
-            for(auto i:(*queue.front())){
-                queue.push(i);
-            }
-            cout<<static_cast<TreeNode*>(queue.front())->getName()<< " ";
-            queue.pop();
-        }
-        cout<<endl;
-    }
-    
-    int main(){
-     
-        queue<AutoNode*> q;
-        TreeNode* A = new TreeNode("A");
-        AutoNode::iterator iter = A->begin();
-        
-        A->add(new TreeNode("B1"));
-        A->add(new TreeNode("B2"));
-        
-        (*A)[0].add(new TreeNode("C1"));
-        (*A)[0].add(new TreeNode("C2"));
-    
-        (*A)[0].add(new TreeNode("C3"));
-        (*A)[0].add(new TreeNode("C4"));
-    
-        (*A)[0][0].add(new TreeNode("D1"));
-        
-       
-        print_tree(A,q);
-        cout<<endl;
-        AutoNode* a = (*A)[0].remove(0);
-        delete a;
-        
-        print_tree(A,q);
-        delete A;
-    }
-    /*输出
-    A B1 B2 C1 C2 C3 C4 D1 
-    
-    D1删除完毕
-    C1删除完毕
-    A B1 B2 C4 C2 C3
-    C4删除完毕
-    C2删除完毕
-    C3删除完毕
-    B1删除完毕
-    B2删除完毕
-    A删除完毕
-    
-    */
-    ```
-
-- 也可以实现具有多态属性的树
 
   - ```mermaid
     classDiagram
-    class AutoNode{
+    class AutoNode~type_Key~{
     ~Abstract~
-    # vector~AutoNode*~ neighbors
+    # map~type_Key,AutoNode*~ neighbors
+    + abstract AutoNode* clone()
     + abstract AutoNode* copy()
-    + virtual AutoNode* remove(size_t index)
-    + virtual void remove(AutoNode& node)
+    + virtual AutoNode* remove(const type_Key& k)
     + virtual void add(AutoNode* node_ptr)
+    + virtual AutoNode::iterator begin()
+    + virtual AutoNode::iterator end()
+    + virtual bool empty()
+    + virtual size_t size()
+    + virtual const type_Key& getKey()
+    + virtual AutoNode& operator[](const type_Key& k)
     }
     class TreeNode{
     + override TreeNode* copy()
-    + virtual string getName()
+    + override AutoNode* clone()
     }
     TreeNode o--> AutoNode
     
-    TreeNode --|> AutoNode:+ virtual string getName()
-    GreenTreeNode--|>TreeNode:+ override string getName()
-    YellowTreeNode--|>TreeNode:+ override string getName()
-    RedTreeNode--|>TreeNode:+ override string getName()
+    TreeNode --|> AutoNode:override copy(),clone()
+    GreenTreeNode--|>TreeNode:+ override clone()+
+    YellowTreeNode--|>TreeNode:+ override clone()
+    RedTreeNode--|>TreeNode:+ override clone()
     
     
     ```
-
     
-
+    
+    
   - ```cpp
     #include <iostream>
-    #include <string>
-    #include "AutoNode.h"
     #include <queue>
+    #include "AutoNode.h"
     using namespace std;
     using namespace AntonaStandard;
-    class TreeNode:public AutoNode{
-    private:
-        string name;
+    template<typename type_Key>
+    class TreeNode:public AutoNode<type_Key>{
     public:
-        inline virtual string getName(){
-            return this->name;
+        TreeNode(const type_Key& k){this->key = k;};
+        virtual AutoNode<type_Key>* clone()override{
+            return new TreeNode(this->key);
         }
-        virtual TreeNode* copy()override{
-            if(this->empty()){
-                // 递归出口，如果是叶子结点，则不需要继续向下构造
-                return new TreeNode(this->name);
+        virtual ~TreeNode()override{
+            for(auto& i:(*this)){
+                delete i.second;
+                i.second = nullptr;
             }
-            TreeNode* ret_ptr = new TreeNode(this->name);
-    
-            for(auto& i:*this){
-                // 递归式拷贝
-                ret_ptr->add(i->copy());
-            }
-            return ret_ptr;
-        }
-        explicit TreeNode(string n):name(n){};
-        virtual ~TreeNode(){
-            for(auto& i:*this){
-                delete i;
-                i = nullptr;
-            }
-            cout<<this->getName()<<"删除完毕"<<endl;
         }
     };
-    class GreenTreeNode:public TreeNode{
+    template<typename type_Key>
+    class GreenNode:public TreeNode<type_Key>{
     public:
-        explicit GreenTreeNode(string n):TreeNode(n){};
-        virtual string getName()override{
-            string n = "绿叶 " + this->TreeNode::getName();
-            return n;
+        GreenNode(const type_Key& k):TreeNode<type_Key>::TreeNode(k){};
+        virtual AutoNode<type_Key>* clone()override{
+            return new GreenNode(this->key);
+        }
+        void outPutGreenNodeMessage(){
+            cout<<" 绿叶: ";
         }
     };
-    class YellowTreeNode:public TreeNode{
+    template<typename type_Key>
+    class YellowNode:public TreeNode<type_Key>{
     public:
-        explicit YellowTreeNode(string n):TreeNode(n){};
-        virtual string getName()override{
-            string n = "黄叶 " + this->TreeNode::getName();
-            return n;
+        YellowNode(const type_Key& k):TreeNode<type_Key>::TreeNode(k){};
+        virtual AutoNode<type_Key>* clone()override{
+            return new YellowNode(this->key);
+        }
+        void outPutYellowNodeMessage(){
+            cout<<" 黄叶: ";
         }
     };
-    class RedTreeNode:public TreeNode{
+    template<typename type_Key>
+    class RedNode:public TreeNode<type_Key>{
     public:
-        explicit RedTreeNode(string n):TreeNode(n){};
-        virtual string getName()override{
-            string n = "红叶 " + this->TreeNode::getName();
-            return n;
+        RedNode(const type_Key& k):TreeNode<type_Key>::TreeNode(k){};
+        virtual AutoNode<type_Key>* clone()override{
+            return new RedNode(this->key);
+        }
+        void outPutRedNodeMessage(){
+            cout<<"红叶: ";
         }
     };
-    void print_tree(TreeNode* root,queue<AutoNode*>& queue){
-        queue.push(root);
-        while(queue.size()){
-            // 将队列首节点中所有的子节点都放到队列中
-            for(auto i:(*queue.front())){
-                queue.push(i);
+    template<typename type_Key>
+    void search(AutoNode<type_Key>* root){
+        // 广度优先遍历
+        queue<AutoNode<type_Key>*> q;
+        q.push(root);
+        while(!q.empty()){
+            for(auto& i:*(q.front())){
+                q.push(i.second);
             }
-            cout<<static_cast<TreeNode*>(queue.front())->getName()<< " ";
-            queue.pop();
-        }
-        cout<<endl;
+            // 使用dynamic_cast转换来判断实例的类型，然后调用对应的函数
+            if(auto p = dynamic_cast<RedNode<type_Key>*>(q.front())){
+                p->outPutRedNodeMessage();
+            }
+            else if(auto p = dynamic_cast<GreenNode<type_Key>*>(q.front())){
+                p->outPutGreenNodeMessage();
+            }
+            else if(auto p = dynamic_cast<YellowNode<type_Key>*>(q.front())){
+                p->outPutYellowNodeMessage();
+            }
+                cout<<q.front()->getKey()<<" ";
+                q.pop();
+            }
+            cout<<endl;
     }
-    
     int main(){
-     
-        queue<AutoNode*> q;
-        TreeNode* A = new TreeNode("Root A");
-        AutoNode::iterator iter = A->begin();
+        TreeNode<const char*>* root = new TreeNode<const char*>("Root");
+        root->add("A1",new GreenNode<const char*>("A1"));
+        root->add("A2",new YellowNode<const char*>("A2"));
+        (*root)["A1"].add("B1",new RedNode<const char*>("B1"));
+        (*root)["A1"].add("B2",new YellowNode<const char*>("B2"));
+        (*root)["A2"].add("B3",new GreenNode<const char*>("B3"));
+        (*root)["A2"].add("B4",new RedNode<const char*>("B4"));
+        search(root);
+        auto r1 = root->copy();
+        search(r1);
+        auto r2 = (*root)["A1"].copy();
+        search(r2);
+        delete root;
+        delete r1;
+        delete r2;
         
-        A->add(new GreenTreeNode("B1"));
-        A->add(new YellowTreeNode("B2"));
-        
-        (*A)[0].add(new RedTreeNode("C1"));
-        (*A)[0].add(new RedTreeNode("C2"));
-    
-        (*A)[0].add(new YellowTreeNode("C3"));
-        (*A)[0].add(new GreenTreeNode("C4"));
-    
-        (*A)[0][0].add(new YellowTreeNode("D1"));
-        
-       
-        print_tree(A,q);
-        cout<<endl;
-        AutoNode* a = (*A)[0].remove(0);
-        delete a;
-        
-        print_tree(A,q);
-        delete A;
+        return 0;
     }
     ```
+    
+  - 
 
   - 当然，同样适用于图，这里只绘制出邻接链表的组成示意，就不再编写代码了
 
     - ```mermaid
       classDiagram
-      class AutoNode{
+      class AutoNode~type_Key~{
       ~Abstract~
-      # vector~AutoNode*~ neighbors
+      # map~type_Key,AutoNode*~ neighbors
+      + abstract AutoNode* clone()
       + abstract AutoNode* copy()
-      + virtual AutoNode* remove(size_t index)
-      + virtual void remove(AutoNode& node)
+      + virtual AutoNode* remove(const type_Key& k)
       + virtual void add(AutoNode* node_ptr)
+      + virtual AutoNode::iterator begin()
+      + virtual AutoNode::iterator end()
+      + virtual bool empty()
+      + virtual size_t size()
+      + virtual const type_Key& getKey()
+      + virtual AutoNode& operator[](const type_Key& k)
       }
       class GraphNodeBase{
       ~添加deleteNode,实现删除单个结点，保留剩下的结点~
       + void deleteNode(AutoNode*)
       }
       class GraphNode{
-      + string name
+      + override clone()
       }
       class GraphArc{
-      + int index
+      + int weight
+      + override clone()
       }
       GraphNodeBase --|> AutoNode
       GraphNode --|> GraphNodeBase
       GraphArc --|> GraphNodeBase
       
       ```
+      
+    - ![image-20230219224659724](images/邻接链表演示.png)  
 
-    - ![image-20230219224659724](images/image-20230219224659724.png) 
+## 总结
+
+- 刚开始考虑构建像这样的树和图的存储体系会发现非常困难，因为树和图的算法过于灵活了，它们不像顺序表和栈，相关的算法和存储都相对简单。另外我们在使用图和树的时候其链式存储结构还是相当简单的，困难的是它的算法，比如移除，添加，拷贝等。其中最麻烦的算法是遍历，图和树的链式存储办法的遍历方式是不同的。
+- 因此我们的项目目的在于，构建一个方便拓展，多态存储，维护方便（删除，插入，拷贝）的链式存储体系

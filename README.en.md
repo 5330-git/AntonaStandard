@@ -26,6 +26,8 @@
 
 2023/2/19   AntonaStandard-v-4.0.0 Add file **AutoNode.h,AutoNode.cpp** Details in AntonaStandard_introduction
 
-#### Author's Blog 
+2023/2/25   AntonaStandard-v-4.1.0 Update **AutoNode.h,Exception.h**,Delete **AutoNode.cpp**
+
+#### Author's Blog
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
