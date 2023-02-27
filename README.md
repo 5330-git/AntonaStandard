@@ -30,6 +30,8 @@
 
 2023/2/25   AntonaStandard-v-4.1.0 更新自动结点库，异常库
 
+2023/2/27   AntonaStandard-v-5.0.0 添加AntonaStandard::AntonaMath库中的Fraction分数类库
+
 #### 原作者博客
 
 - [学艺不精的Антон的博客_CSDN博客](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 

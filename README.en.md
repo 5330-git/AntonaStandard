@@ -28,6 +28,8 @@
 
 2023/2/25   AntonaStandard-v-4.1.0 Update **AutoNode.h,Exception.h**,Delete **AutoNode.cpp**
 
+2023/2/27   AntonaStandard-v-5.0.0  Create a new namespace called AntonaMath,It will include severials math tools . Add file in to AntonaMath: **Fraction.h,Fraction.cpp** 
+
 #### Author's Blog
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
