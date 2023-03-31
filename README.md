@@ -32,6 +32,8 @@
 
 2023/2/27   AntonaStandard-v-5.0.0 添加AntonaStandard::AntonaMath库中的Fraction分数类库
 
+2023/3/31   AntonaStandard-v-6.0.0 添加运行时类型识别库——过滤器Filter,实现RTTI以及处理
+
 #### 原作者博客
 
 - [学艺不精的Антон的博客_CSDN博客](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 

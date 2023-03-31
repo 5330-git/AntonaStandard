@@ -30,6 +30,8 @@
 
 2023/2/27   AntonaStandard-v-5.0.0  Create a new namespace called AntonaMath,It will include severials math tools . Add file in to AntonaMath: **Fraction.h,Fraction.cpp** 
 
+2023/3/31   AntonaStandard-v-6.0.0 Give a way to realize RTTI and related disposal——Filter,Add Files **Filter.h** 
+
 #### Author's Blog
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
