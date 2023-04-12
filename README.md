@@ -34,6 +34,8 @@
 
 2023/3/31   AntonaStandard-v-6.0.0 添加运行时类型识别库——过滤器Filter,实现RTTI以及处理
 
+2023/4/12   AntonaStandard-v-7.0.0 添加线程并发工具库——信号量扩展，给予C++20 semaphore库，实现And信号量请求，与信号量集请求
+
 #### 原作者博客
 
 - [学艺不精的Антон的博客_CSDN博客](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
