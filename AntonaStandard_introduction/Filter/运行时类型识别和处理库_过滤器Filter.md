@@ -16,9 +16,10 @@
 
 ## 项目版本
 
-| 版本号  | 版本描述       | 时间      |
-| ------- | -------------- | --------- |
-| v-1.0.0 | 初步实现过滤器 | 2023/3/31 |
+| 版本号  | 版本描述                                                    | 时间      |
+| ------- | ----------------------------------------------------------- | --------- |
+| v-1.0.0 | 初步实现过滤器                                              | 2023/3/31 |
+| v-1.1.0 | 为了防止与标准库Filter.h重名，修改头文件名称为 TypeFilter.h | 2023/7/8  |
 
 
 
@@ -45,8 +46,9 @@
 ## 构建平台
 
 - C++ 11
-- Windows 10
-- GCC 11.2.0 x86_64-w64-mingw32
+- Windows10 ,Linux Ubuntu 22.04
+- VSCode
+- GCC 11.2.0 x86_64-w64-mingw32, GCC 11.3.0 x86_64-linux-gnu
 
 ## 项目结构
 
@@ -194,7 +196,7 @@ Filter--|>Basic_Filter
 
   ```cpp
   #include <iostream>
-  #include "Filter.h" 
+  #include "TypeFilter.h" 
   using namespace std;
   using namespace AntonaStandard;
   

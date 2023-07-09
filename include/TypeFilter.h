@@ -5,10 +5,14 @@
 #include <vector>
 #include "Exception.h"
 
-#define AntonaStandard_Filter_VERSION "1.0.0"
-#define AntonaStandard_Filter_EDIT_TIME "2023/3/31"
+#define AntonaStandard_Filter_VERSION "1.1.0"
+#define AntonaStandard_Filter_EDIT_TIME "2023/7/8"
 #define AntonaStandard_Filter_AUTHOR "Anton"
 
+/*
+*  2023/3/31 v-1.0.0 初步实现过滤器
+*  2023/7/8 v-1.1.0 为了防止与标准库Filter.h重名，修改头文件名称为 TypeFilter.h
+*/
 namespace AntonaStandard{
     class Basic_Filter;
     template<typename type_USER,typename type_IDENTI> class Filter;

@@ -3,13 +3,14 @@
 #include <semaphore>
 #include <mutex>
 
-#define AntonaStandard_ThreadConcurrentTools_Sem_Extension_VERSION "1.0.0"
-#define AntonaStandard_ThreadConcurrentTools_Sem_Extension_EDIT_TIME "2023/2/24"
+#define AntonaStandard_ThreadConcurrentTools_Sem_Extension_VERSION "2.0.0"
+#define AntonaStandard_ThreadConcurrentTools_Sem_Extension_EDIT_TIME "2023/7/9"
 #define AntonaStandard_ThreadConcurrentTools_Sem_Extension_AUTHOR "Anton"
 
 /*
 *   Decoded by UTF-8
 *   2023/4/11 v-1.0.0 初步实现：and信号量请求，信号量集请求
+*   2023/7/9  v-1.0.0 由于原来的模板函数声明在Linux下无法识别非模板参数sem_max_counts,本版本将信号量的类型也用模板参数抽象了出来，因此模板函数声明有较大改变
 */
 // And信号量请求
 namespace AntonaStandard{
@@ -21,43 +22,43 @@ namespace AntonaStandard{
     private:
         std::mutex and_sem_mutex;
         // 检查传入的若干信号量是否可以被同时锁定，如果可以就返回ture,否则返回false
-        template<typename... type_Args,long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         bool and_sem_isAvaliable(
-            std::counting_semaphore<sem_max_counts>& sem,
-            type_Args&... args
+            type_Sem&& sem,
+            type_Args&&... args
         );
 
         // 模板函数 and_sem_isAvaliable的参数展开递归出口
-        template<long long sem_max_counts>
+        template<typename type_Sem>
         bool and_sem_isAvaliable(
-            std::counting_semaphore<sem_max_counts>& sem
+            type_Sem& sem
         );
 
         // 用于包装 and_isAvaliable 使得该函数可以互斥执行
-        template<typename... type_Args,long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         bool and_sem_testing(
-            std::counting_semaphore<sem_max_counts>& sem,
-            type_Args&... args
+            type_Sem&& sem,
+            type_Args&&... args
         );
 
     public:
         And_Sem_Acquirer(){};
         // 用于以And信号量的方式发出占用请求
-        template<typename... type_Args,long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         void and_acquire(
-            std::counting_semaphore<sem_max_counts>& sem,
-            type_Args&... args
+            type_Sem&& sem,
+            type_Args&&... args
         );
         // 释放信号量
-        template<typename... type_Args,long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         void and_release(
-            std::counting_semaphore<sem_max_counts>& sem,
-            type_Args&... args
+            type_Sem&& sem,
+            type_Args&&... args
         );
         // 释放信号量的参数展开递归出口
-        template<long long sem_max_counts>
+        template<typename type_Sem>
         void and_release(
-            std::counting_semaphore<sem_max_counts>& sem
+            type_Sem& sem
         );
     };
 
@@ -65,33 +66,33 @@ namespace AntonaStandard{
     private:
         std::mutex sem_set_mutex;
         // 请求 n 个资源
-        template<long long sem_max_counts>
+        template<typename type_Sem>
         bool try_acquire_n(
-            std::counting_semaphore<sem_max_counts>& sem,
+            type_Sem& sem,
             int n
         );
 
         // 可变模板函数递归调用的出口
-        template<long long sem_max_counts>
+        template<typename type_Sem>
         bool sem_set_isAvaliable(
-            std::counting_semaphore<sem_max_counts>& sem,
+            type_Sem& sem,
             int ava_least,
             int ava_counts
         );
 
         // 可变模板函数，检查传入的若干信号量是否可用
-        template<typename... type_Args,long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         bool sem_set_isAvaliable(
-            std::counting_semaphore<sem_max_counts>& sem,
+            type_Sem&& sem,
             int ava_least,
             int ava_counts,
             type_Args&&... args
         );
     
         // 包装sem_set_isAvaliavle 是其递归调用是互斥的
-        template<typename... type_Args,long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         bool sem_set_testing(
-            std::counting_semaphore<sem_max_counts>& sem,
+            type_Sem&& sem,
             int ava_least,
             int ava_counts,
             type_Args&&... args
@@ -102,25 +103,25 @@ namespace AntonaStandard{
     public:
         Sem_Set_Acquirer(){};
         // 信号量请求
-        template<typename... type_Args,long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         void sem_set_acquire(
-            std::counting_semaphore<sem_max_counts>& sem,
+            type_Sem&& sem,
             int ava_least,
             int ava_counts,
             type_Args&&... args
         );
 
         // 信号量释放的递归出口
-        template<long long sem_max_counts>
+        template<typename type_Sem>
         void sem_set_release(
-            std::counting_semaphore<sem_max_counts>& sem,
+            type_Sem&& sem,
             int ava_counts
         );
 
         // 信号量释放
-        template<typename... type_Args, long long sem_max_counts>
+        template<typename type_Sem,typename... type_Args>
         void sem_set_release(
-            std::counting_semaphore<sem_max_counts>& sem,
+            type_Sem&& sem,
             int ava_counts,
             type_Args&&... args
         );
@@ -131,8 +132,8 @@ namespace AntonaStandard{
 }
 
 namespace AntonaStandard{
-    template <typename... type_Args, long long sem_max_counts>
-    inline bool And_Sem_Acquirer::and_sem_isAvaliable(std::counting_semaphore<sem_max_counts> &sem, type_Args &...args)
+    template <typename type_Sem,typename... type_Args>
+    inline bool And_Sem_Acquirer::and_sem_isAvaliable(type_Sem&& sem, type_Args &&...args)
     {
         // 首先尝试锁定sem,如果锁定成功就接着锁剩下的
         if(sem.try_acquire()){
@@ -148,22 +149,22 @@ namespace AntonaStandard{
         return false;
     }
 
-    template <long long sem_max_counts>
-    inline bool And_Sem_Acquirer::and_sem_isAvaliable(std::counting_semaphore<sem_max_counts> &sem)
+    template <typename type_Sem>
+    inline bool And_Sem_Acquirer::and_sem_isAvaliable(type_Sem &sem)
     {
         return sem.try_acquire();
     }
 
-    template <typename... type_Args, long long sem_max_counts>
-    inline bool And_Sem_Acquirer::and_sem_testing(std::counting_semaphore<sem_max_counts> &sem, type_Args &...args)
+    template<typename type_Sem,typename... type_Args>
+    inline bool And_Sem_Acquirer::and_sem_testing(type_Sem&& sem, type_Args &&...args)
     {
         // 使用互斥锁and_sem_mutex,保证对and_sem_isAvaliable的访问是互斥的
         typename std::unique_lock<std::mutex> lck(this->and_sem_mutex);
         return this->and_sem_isAvaliable(sem,args...);
     }
 
-    template <typename... type_Args, long long sem_max_counts>
-    inline void And_Sem_Acquirer::and_acquire(std::counting_semaphore<sem_max_counts> &sem, type_Args &...args)
+    template<typename type_Sem,typename... type_Args>
+    inline void And_Sem_Acquirer::and_acquire(type_Sem&& sem, type_Args &&...args)
     {
         while(!this->and_sem_testing(sem,args...)){
             // 如果没有办法一次性分配，那就让出时间片
@@ -171,21 +172,21 @@ namespace AntonaStandard{
         }
     }
 
-    template <typename... type_Args, long long sem_max_counts>
-    inline void And_Sem_Acquirer::and_release(std::counting_semaphore<sem_max_counts> &sem, type_Args &...args)
+    template<typename type_Sem,typename... type_Args>
+    inline void And_Sem_Acquirer::and_release(type_Sem&& sem, type_Args &&...args)
     {
         this->and_release(args...);
         sem.release();
     }
 
-    template <long long sem_max_counts>
-    inline void And_Sem_Acquirer::and_release(std::counting_semaphore<sem_max_counts> &sem)
+    template <typename type_Sem>
+    inline void And_Sem_Acquirer::and_release(type_Sem &sem)
     {
         sem.release();
     }
 
-    template <long long sem_max_counts>
-    inline bool Sem_Set_Acquirer::try_acquire_n(std::counting_semaphore<sem_max_counts> &sem, int n)
+    template <typename type_Sem>
+    inline bool Sem_Set_Acquirer::try_acquire_n(type_Sem&sem, int n)
     {
         for(int i = 1;i<=n;++i){
             if(!sem.try_acquire()){
@@ -197,8 +198,8 @@ namespace AntonaStandard{
         return true;
     }
 
-    template <long long sem_max_counts>
-    inline bool Sem_Set_Acquirer::sem_set_isAvaliable(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts)
+    template <typename type_Sem>
+    inline bool Sem_Set_Acquirer::sem_set_isAvaliable(type_Sem &sem, int ava_least, int ava_counts)
     {
         // 查看是否满足下限，即可申请的信号量大于 ava_least
         if(try_acquire_n(sem,ava_least)){
@@ -212,8 +213,8 @@ namespace AntonaStandard{
         return false;
     }
 
-    template <typename... type_Args, long long sem_max_counts>
-    inline bool Sem_Set_Acquirer::sem_set_isAvaliable(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts, type_Args &&...args)
+    template<typename type_Sem,typename... type_Args>
+    inline bool Sem_Set_Acquirer::sem_set_isAvaliable(type_Sem&& sem, int ava_least, int ava_counts, type_Args &&...args)
     {
         // 查看是否满足下限，即可申请的信号量大于 ava_least
         if(try_acquire_n(sem,ava_least)){
@@ -232,21 +233,21 @@ namespace AntonaStandard{
         return false;
     }
 
-    template <typename... type_Args, long long sem_max_counts>
-    inline bool Sem_Set_Acquirer::sem_set_testing(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts, type_Args &&...args)
+    template<typename type_Sem,typename... type_Args>
+    inline bool Sem_Set_Acquirer::sem_set_testing(type_Sem&& sem, int ava_least, int ava_counts, type_Args &&...args)
     {
         typename std::unique_lock<std::mutex> lck(this->sem_set_mutex);
         return sem_set_isAvaliable(sem,ava_least,ava_counts,args...);
     }
 
-    template <long long sem_max_counts>
-    inline void Sem_Set_Acquirer::sem_set_release(std::counting_semaphore<sem_max_counts> &sem, int ava_counts)
+    template <typename type_Sem>
+    inline void Sem_Set_Acquirer::sem_set_release(type_Sem&& sem, int ava_counts)
     {
         sem.release(ava_counts);
     }
 
-    template <typename... type_Args, long long sem_max_counts>
-    inline void Sem_Set_Acquirer::sem_set_acquire(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts, type_Args &&...args)
+    template<typename type_Sem,typename... type_Args>
+    inline void Sem_Set_Acquirer::sem_set_acquire(type_Sem&& sem, int ava_least, int ava_counts, type_Args &&...args)
     {
         while(!sem_set_testing(sem,ava_least,ava_counts,args...)){
             // 申请不成功就让出时间片
@@ -254,8 +255,8 @@ namespace AntonaStandard{
         }
     }
     
-    template <typename... type_Args, long long sem_max_counts>
-    inline void Sem_Set_Acquirer::sem_set_release(std::counting_semaphore<sem_max_counts> &sem, int ava_counts, type_Args &&...args)
+    template<typename type_Sem,typename... type_Args>
+    inline void Sem_Set_Acquirer::sem_set_release(type_Sem&& sem, int ava_counts, type_Args &&...args)
     {
         sem_set_release(args...);
         sem.release(ava_counts);

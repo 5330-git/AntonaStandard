@@ -6,13 +6,14 @@
 #include "Exception.h"
 
 
-#define AntonaStandard_Reflection_VERSION "1.0.0"
-#define AntonaStandard_Reflection_EDIT_TIME  "2023/1/2"
+#define AntonaStandard_Reflection_VERSION "1.2.0"
+#define AntonaStandard_Reflection_EDIT_TIME  "2023/7/8"
 #define AntonaStandard_Reflection_AUTHOR "Anton"
 
 /*
 *   Decoded by utf-8
 *   2023/1/2  1.1.0 - 初步实现反射机制
+*   2023/7/8  1.2.0 - 添加宏REGISTER_BY_OTHERNAME,允许自定义注册名称
 */
 
 // 变量初始化宏
@@ -27,6 +28,13 @@ f =  [](){                                      \
         return new className;                   \
 };                                              \
 str_name = #className;                          \
+this->func_map.insert(pair<std::string,std::function<void*(void)>>(str_name,f));  \
+
+#define REGISTER_BY_OTHERNAME(className,regist_name)       \
+f =  [](){                                      \
+        return new className;                   \
+};                                              \
+str_name = #regist_name;                        \
 this->func_map.insert(pair<std::string,std::function<void*(void)>>(str_name,f));  \
 
 namespace AntonaStandard{

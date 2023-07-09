@@ -174,7 +174,8 @@ Delegate<int&(int&)> del2;
 
 ```cpp
 del += newDelegate(A::s_i_v_A);
-del += newDelegate(a,a.i_v_A);
+del += newDelegate(a,a.i_v_A);		// 注意改写法只在Windows下不会报错，在Linux下需要写成：
+// del += newDelegate(a,&A::i_v_A)
 del += newDelegate(i_v);
 
 del1 += newDelegate(B::s_v_v_B);

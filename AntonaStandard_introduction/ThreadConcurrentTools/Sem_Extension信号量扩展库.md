@@ -11,6 +11,7 @@
 | 版本号  | 版本描述                                                     | 时间      |
 | ------- | ------------------------------------------------------------ | --------- |
 | v-1.0.0 | 初步实现信号量扩展库(Sem_Extension)，实现And信号量请求与释放，以及信号量集的请求与释放 | 2023/4/11 |
+| v-2.0.0 | 由于原来的模板函数声明在Linux下无法识别非模板参数sem_max_counts,本版本将信号量的类型也用模板参数抽象了出来，因此模板函数声明有较大改变 | 2023/7/8  |
 
 ## 项目目的
 
@@ -32,9 +33,9 @@
 
 ## 平台
 
-- Windows10
+- Windows10 ,Linux Ubuntu 22.04
 - VSCode
-- GCC 11.2.0 x86_64-w64-mingw32
+- GCC 11.2.0 x86_64-w64-mingw32, GCC 11.3.0 x86_64-linux-gnu
 
 ## 项目结构
 
@@ -57,19 +58,40 @@
 
 **重载版本一** 
 
-> `template<typename... type_Args,long long sem_max_counts>bool and_sem_isAvaliable(std::counting_semaphore<sem_max_counts>& sem, type_Args&... args)`
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         bool and_sem_isAvaliable(
+>             type_Sem&& sem,
+>             type_Args&&... args
+>         );
+> ```
 
 - 用于递归检查传入的若干信号量是否可以被同时锁定，如果可以则返回true否则返回false
 
 **重载版本二** 
 
-> `template<long long sem_max_counts> bool AntonaStandard::And_Sem_Acquirer::and_sem_isAvaliable(std::counting_semaphore<sem_max_counts> &sem)` 
+> ```cpp
+> template<typename type_Sem>
+>         bool and_sem_isAvaliable(
+>             type_Sem& sem
+>         );
+> ```
+>
+> 
 
 - 用于参数展开的递归出口
 
 #### 私有成员函数 and_sem_testing
 
-> `template<class... type_Args, long long sem_max_counts> bool AntonaStandard::And_Sem_Acquirer::and_sem_testing(std::counting_semaphore<sem_max_counts> &sem, type_Args &...args)` 
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         bool and_sem_testing(
+>              type_Sem&& sem,
+>             type_Args&&... args
+>         );
+> ```
+>
+> 
 
 - 使用私有锁 **and_sem_mutex** 用于包装 **and_sem_isAvailable** 使得其递归调用是互斥进行的。
 
@@ -77,7 +99,15 @@
 
 #### 公有成员函数 and_acquire
 
-> `template<class... type_Args, long long sem_max_counts> void AntonaStandard::And_Sem_Acquirer::and_acquire(std::counting_semaphore<sem_max_counts> &sem, type_Args &...args)` 
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         void and_acquire(
+>             type_Sem&& sem,
+>             type_Args&&... args
+>         );
+> ```
+>
+> 
 
 - 以And 的形式，向传入的信号量发出请求，只有所有的请求都被通过的情况下才可以占用（信号量减一），否则让出时间片，进入自锁
 
@@ -87,13 +117,27 @@
 
 **重载版本一** 
 
-> `template<class... type_Args, long long sem_max_counts> void AntonaStandard::And_Sem_Acquirer::and_release(std::counting_semaphore<sem_max_counts> &sem, type_Args &...args)` 
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         void and_release(
+>             type_Sem&& sem,
+>             type_Args&&... args
+>         );
+> ```
+>
+> 
 
 - 释放传入的信号量
 
 **重载版本二** 
 
-> `template<long long sem_max_counts> void AntonaStandard::And_Sem_Acquirer::and_release(std::counting_semaphore<sem_max_counts> &sem)` 
+> ```cpp 
+> template<typename type_Sem>
+>         void and_release(
+>             type_Sem& sem
+>         );
+> 
+> ```
 
 - 是重载版本一展开参数包的递归出口。
 
@@ -105,7 +149,15 @@
 
 #### 私有成员函数 try_acquire_n 
 
-> `template<long long sem_max_counts> void AntonaStandard::And_Sem_Acquirer::and_release(std::counting_semaphore<sem_max_counts> &sem)`  
+> ```cpp
+> template<typename type_Sem>
+>         bool try_acquire_n(
+>             type_Sem& sem,
+>             int n
+>         );
+> ```
+>
+> 
 
 - 由 **sem_set_isAvaliable** 调用，用来一次性申请若干资源（信号量减n）
 
@@ -115,7 +167,18 @@
 
 **重载版本一** 
 
-> `template<class... type_Args, long long sem_max_counts> bool AntonaStandard::Sem_Set_Acquirer::sem_set_isAvaliable(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts, type_Args &&...args)` 
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         bool sem_set_isAvaliable(
+>             type_Sem&& sem,
+>             int ava_least,
+>             int ava_counts,
+>             type_Args&&... args
+>         );
+> 
+> ```
+>
+> 
 
 - 用于检查传入的信号量是否可以全部都被占用，如果可以则对每个信号量请求 ava-counts个资源，否则不请求，让出时间片进入自锁状态。
 - 其中ava_least 表示如果信号量的可用资源小于这个值，那么就不允许占用
@@ -125,23 +188,52 @@
 
 **重载版本二** 
 
-> `template<long long sem_max_counts> bool AntonaStandard::Sem_Set_Acquirer::sem_set_isAvaliable(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts)` 
+> ```cpp
+> template<typename type_Sem>
+>         bool sem_set_isAvaliable(
+>             type_Sem& sem,
+>             int ava_least,
+>             int ava_counts
+>         );
+> ```
+>
+> 
 
-- 为**重载版本一**参数展开的递归出口 
+为**重载版本一**参数展开的递归出口 
 
 
 
 #### 私有成员函数 sem_set_testing 
 
-> `template<class... type_Args, long long sem_max_counts> bool AntonaStandard::Sem_Set_Acquirer::sem_set_testing(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts, type_Args &&...args)` 
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         bool sem_set_testing(
+>             type_Sem&& sem,
+>             int ava_least,
+>             int ava_counts,
+>             type_Args&&... args
+>         );
+> ```
+>
+> 
 
-- 用于包装 **sem_set_isAvaliable** ，使用 私有得互斥锁 sem_set_mutex 实现**sem_set_isAvaliable** 递归展开过程的互斥 
+- 用于包装 **sem_set_isAvaliable** ，使用 私有的互斥锁 sem_set_mutex 实现**sem_set_isAvaliable** 递归展开过程的互斥 
 
 
 
 #### 公有成员函数 sem_set_acquire
 
-> `template<class... type_Args, long long sem_max_counts> void AntonaStandard::Sem_Set_Acquirer::sem_set_acquire(std::counting_semaphore<sem_max_counts> &sem, int ava_least, int ava_counts, type_Args &&...args)` 
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         void sem_set_acquire(
+>             type_Sem&& sem,
+>             int ava_least,
+>             int ava_counts,
+>             type_Args&&... args
+>         );
+> ```
+>
+> 
 
 - 向若干个信号量发出请求，注意传参的格式如下：
 
@@ -161,7 +253,16 @@
 
 **重载版本一**
 
-> `template<class... type_Args, long long sem_max_counts> void AntonaStandard::Sem_Set_Acquirer::sem_set_release(std::counting_semaphore<sem_max_counts> &sem, int ava_counts, type_Args &&...args)` 
+> ```cpp
+> template<typename type_Sem,typename... type_Args>
+>         void sem_set_release(
+>             type_Sem&& sem,
+>             int ava_counts,
+>             type_Args&&... args
+>         );
+> ```
+>
+> 
 
 - 令传入的每一个信号量都释放 ava_counts个资源 
 
@@ -183,7 +284,15 @@
 
 **重载版本二** 
 
-> `template<long long sem_max_counts> void AntonaStandard::Sem_Set_Acquirer::sem_set_release(std::counting_semaphore<sem_max_counts> &sem, int ava_counts)` 
+> ```cpp
+> template<typename type_Sem>
+>         void sem_set_release(
+>             type_Sem&& sem,
+>             int ava_counts
+>         );
+> ```
+>
+> 
 
 - 为 **重载版本一** 参数展开的递归出口
 
