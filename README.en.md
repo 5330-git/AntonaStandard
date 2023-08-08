@@ -121,6 +121,8 @@
 
 2023/7/9    AntonaStandard-v-7.1.0 Perfect the cmake building files, it can build different kind of libraries and excutable file according to different platform. There are also several modification of project Reflection,Filter,Sem_Extension.
 
+2023/8/8   AntonaStandard-v-8.0.0 Modified plenty of `namespace` s and the structure of directory `include` . At the mean time, added Threads pool .
+
 #### Author's Blog
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 

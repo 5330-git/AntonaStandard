@@ -3,21 +3,24 @@
 #include <semaphore>
 #include <mutex>
 
-#define AntonaStandard_ThreadConcurrentTools_Sem_Extension_VERSION "2.0.0"
-#define AntonaStandard_ThreadConcurrentTools_Sem_Extension_EDIT_TIME "2023/7/9"
-#define AntonaStandard_ThreadConcurrentTools_Sem_Extension_AUTHOR "Anton"
+#define AntonaStandard_ThreadTools_Sem_Extension_VERSION "2.1.0"
+#define AntonaStandard_ThreadTools_Sem_Extension_EDIT_TIME "2023/8/8"
+#define AntonaStandard_ThreadTools_Sem_Extension_AUTHOR "Anton"
 
 /*
 *   Decoded by UTF-8
 *   2023/4/11 v-1.0.0 初步实现：and信号量请求，信号量集请求
-*   2023/7/9  v-1.0.0 由于原来的模板函数声明在Linux下无法识别非模板参数sem_max_counts,本版本将信号量的类型也用模板参数抽象了出来，因此模板函数声明有较大改变
+*   2023/7/9  v-2.0.0 由于原来的模板函数声明在Linux下无法识别非模板参数sem_max_counts,本版本将信号量的类型也用模板参数抽象了出来，因此模板函数声明有较大改变
+*   2023/8/8  v-2.1.0 修改命名空间从 AntonaStandard 到 AntonaStandard::ThreadTools
 */
 // And信号量请求
 namespace AntonaStandard{
-    class And_Sem_Acquirer;                 // And信号量请求者，每个请求者维护一种同步问题
-    class Sem_Set_Acquirer;                 
+    namespace ThreadTools{
+        class And_Sem_Acquirer;                 // And信号量请求者，每个请求者维护一种同步问题
+        class Sem_Set_Acquirer;    
+    }            
 }
-namespace AntonaStandard{
+namespace AntonaStandard::ThreadTools{
     class And_Sem_Acquirer{
     private:
         std::mutex and_sem_mutex;
@@ -131,7 +134,7 @@ namespace AntonaStandard{
 
 }
 
-namespace AntonaStandard{
+namespace AntonaStandard::ThreadTools{
     template <typename type_Sem,typename... type_Args>
     inline bool And_Sem_Acquirer::and_sem_isAvaliable(type_Sem&& sem, type_Args &&...args)
     {

@@ -1,7 +1,7 @@
 #include <iostream>
-#include "Delegate.h"
+#include "Utilities/Delegate.h"
 using namespace std;
-using namespace AntonaStandard;
+using namespace AntonaStandard::Utilities;
 
 class A{
 public:

@@ -5,20 +5,24 @@
 #include <vector>
 #include "Exception.h"
 
-#define AntonaStandard_Filter_VERSION "1.1.0"
-#define AntonaStandard_Filter_EDIT_TIME "2023/7/8"
+#define AntonaStandard_Filter_VERSION "1.2.0"
+#define AntonaStandard_Filter_EDIT_TIME "2023/8/8"
 #define AntonaStandard_Filter_AUTHOR "Anton"
 
 /*
-*  2023/3/31 v-1.0.0 初步实现过滤器
-*  2023/7/8 v-1.1.0 为了防止与标准库Filter.h重名，修改头文件名称为 TypeFilter.h
+*   2023/3/31   v-1.0.0 初步实现过滤器
+*   2023/7/8    v-1.1.0 为了防止与标准库Filter.h重名，修改头文件名称为 TypeFilter.h
+*   2023/8/8    v-1.2.0  修改命名空间从 AntonaStandard 到 AntonaStandard::Utilities
+
 */
 namespace AntonaStandard{
-    class Basic_Filter;
-    template<typename type_USER,typename type_IDENTI> class Filter;
+    namespace Utilities{
+        class Basic_Filter;
+        template<typename type_USER,typename type_IDENTI> class Filter;
+    }
 }
 
-namespace AntonaStandard{
+namespace AntonaStandard::Utilities{
     class Basic_Filter{
     protected:
         Basic_Filter* parent = nullptr;
@@ -57,11 +61,11 @@ namespace AntonaStandard{
     } ;
 }
 
-namespace AntonaStandard{
+namespace AntonaStandard::Utilities{
     template <typename type_USER, typename type_IDENTI>
     inline void Filter<type_USER, type_IDENTI>::install(Filter *other) {
         if(other == nullptr){
-            throw AntonaStandard::NullPointer_Error("Got a null pointer in Filter!");
+            throw AntonaStandard::Utilities::NullPointer_Error("Got a null pointer in Filter!");
         }
         this->candidates.emplace(other,other);
     }

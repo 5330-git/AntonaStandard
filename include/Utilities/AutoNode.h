@@ -6,25 +6,26 @@
 #include "Exception.h"
 #include <sstream>
 
-#define AntonaStandard_AutoNode_VERSION "1.0.0"
-#define AntonaStandard_AutoNode_EDIT_TIME "2023/2/19"
+#define AntonaStandard_AutoNode_VERSION "1.2.0"
+#define AntonaStandard_AutoNode_EDIT_TIME "2023/8/8"
 #define AntonaStandard_AutoNode_AUTHOR "Anton"
 
 /*
 *   Decoded by utf-8
-*   v-1.0.0 2023/2/19 - 初步实现自动节点，
-*   v-1.1.0 2023/2/25 - 修改自动结点的邻居存储方式，添加clone函数实现浅复制
+*   2023/2/19 v-1.0.0  初步实现自动节点，
+*   2023/2/25 v-1.1.0  修改自动结点的邻居存储方式，添加clone函数实现浅复制
+*   2023/8/8  v-1.2.0  修改命名空间从 AntonaStandard 到 AntonaStandard::Utilities
 *
 */
 
 // 前置声明
 namespace AntonaStandard{
-    // class AutoNode;         // 抽象类，做接口使用
-    template<typename type_Key>class AutoNode;
-    
+    namespace Utilities{
+        template<typename type_Key>class AutoNode;
+    }
 }
 // 类的结构声明和定义
-namespace AntonaStandard{
+namespace AntonaStandard::Utilities{
     template<typename type_Key>
     class AutoNode{
     protected:
@@ -59,7 +60,7 @@ namespace AntonaStandard{
         }
         virtual void add(const type_Key& k,AutoNode* node_ptr){
             if(node_ptr == nullptr){
-                throw NullPointer_Error("Got Null Pointer in function AutoNode::add(~~)");
+                throw AntonaStandard::Utilities::NullPointer_Error("Got Null Pointer in function AutoNode::add(~~)");
             }
             AutoNode::iterator iter = this->neighbors.find(k);
             if(iter == this->neighbors.end()){
@@ -68,7 +69,7 @@ namespace AntonaStandard{
             }
             else{
                 // 有冲突
-                throw Conflict_Error("There is a conflict when using function AntoNode::add(~~) because of an existed key!");
+                throw AntonaStandard::Utilities::Conflict_Error("There is a conflict when using function AntoNode::add(~~) because of an existed key!");
             }
         }
         inline virtual AutoNode& operator[](const type_Key& k){
@@ -78,11 +79,11 @@ namespace AntonaStandard{
                     return *(iter->second);
                 }
                 else{
-                    throw AntonaStandard::NullPointer_Error("Got Null Pointer in AutoNode::operator[](~~)");
+                    throw AntonaStandard::Utilities::NullPointer_Error("Got Null Pointer in AutoNode::operator[](~~)");
                 }
             }
             else{
-                throw AntonaStandard::NotFound_Error("The Key was not found! In Function AutoNode::operator[](~~)");
+                throw AntonaStandard::Utilities::NotFound_Error("The Key was not found! In Function AutoNode::operator[](~~)");
             }
         }
         inline virtual AutoNode* visit(const type_Key& k){
@@ -91,7 +92,7 @@ namespace AntonaStandard{
                 return iter->second;
             }
             else{
-                throw AntonaStandard::NotFound_Error("The Key was not found! In Function AutoNode::operator[](~~)");
+                throw AntonaStandard::Utilities::NotFound_Error("The Key was not found! In Function AutoNode::operator[](~~)");
             }
         }
         inline AutoNode::iterator begin(){

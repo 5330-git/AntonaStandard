@@ -122,6 +122,8 @@
 
 2023/7/9   AntonaStandard-v-7.1.0 完善了cmake构建文件，可以根据平台的不同构建不同版本的库文件和示例源文件。同时对反射库Rflection 类型过滤器Filter 信号量扩展Sem_Extension进行了一定的修改
 
+2023/8/8 AntonaStandard-v-8.0.0 修改大量文件的命名空间，修改了include下的文件结构，新增线程池库
+
 #### 原作者博客
 
 - [学艺不精的Антон的博客_CSDN博客](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 

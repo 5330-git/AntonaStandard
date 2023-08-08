@@ -1,7 +1,7 @@
 #include <iostream>
-#include "Fraction.h"   // 分数库
+#include "Math/Fraction.h"   // 分数库
 using namespace std;
-using namespace AntonaStandard::AntonaMath;
+using namespace AntonaStandard::Math;
 int main(){
     cout<<"分数库演示(Demo of Library Fraction):"<<endl;
     // 无参构造

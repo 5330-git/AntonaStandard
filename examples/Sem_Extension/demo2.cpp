@@ -4,10 +4,10 @@
 #include <mutex>
 #include <vector>
 #include <chrono>
-#include "Sem_Extension.h"
+#include "ThreadTools/Sem_Extension.h"
 using namespace std;
 
-AntonaStandard::Sem_Set_Acquirer sem_ac;
+AntonaStandard::ThreadTools::Sem_Set_Acquirer sem_ac;
 mutex terminal_mutex;
 // 初始化信号量
 counting_semaphore sem_L(2);            // 即书上的信号量L,初始化为读者线程的个数(RN)

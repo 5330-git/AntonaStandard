@@ -4,13 +4,13 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include "Sem_Extension.h"
+#include "ThreadTools/Sem_Extension.h"
 using namespace std;
 
 
 vector<binary_semaphore*> chopsticks;          // 五个信号量表示五支筷子,0,1,2，3，4
 binary_semaphore usable(1);		// 实现对窗口的互斥输出
-AntonaStandard::And_Sem_Acquirer ac;
+AntonaStandard::ThreadTools::And_Sem_Acquirer ac;
 void work(int code){
 // 每个哲学家需要做的工作：就餐10次
     // 采取策略，使得最多有四个哲学家可以锁定其左边的筷子

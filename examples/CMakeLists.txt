@@ -14,8 +14,9 @@ endif()
 
 # 添加子文件夹
 add_subdirectory(Antona_foreach)
-add_subdirectory(AntonaMath)
+add_subdirectory(Math)
 add_subdirectory(Delegate)
 add_subdirectory(AutoNode)
 add_subdirectory(TypeFilter)
-add_subdirectory(ThreadConcurrentTools)
+add_subdirectory(Sem_Extension)
+add_subdirectory(ThreadsPool)

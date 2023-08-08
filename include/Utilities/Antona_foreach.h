@@ -2,13 +2,24 @@
 #define ANTONA_FOREACH_H
 
 #define Antona_foreach_AUTHOR "Anton"
-#define Antona_foreach_VERSION "1.0.0"
+#define Antona_foreach_VERSION "1.1.0"
 #define Antona_foreach_EDIT_TIME "2023/1/11"
 /*
 *   Decoded by utf-8
-*   2023/1/11   初步实现，添加了几个模板，允许使用base-range for syntax逆向迭代容器。
+*   2023/1/11 v-1.0.0 初步实现，添加了几个模板，允许使用base-range for syntax逆向迭代容器。
+*   2023/8/8  v-1.1.0 修改命名空间从 AntonaStandard 到 AntonaStandard::Utilities
 */
-namespace AntonaStadandard{
+namespace AntonaStandard{
+    namespace Utilities{
+        template <typename type_classTypeContainer>
+        struct reverse_wrapper ;
+        template <typename type_BasicTypeContainer, size_t type_size>
+        struct reverse_wrapper< type_BasicTypeContainer[type_size] >;
+        template <typename type_Container>
+        reverse_wrapper<type_Container> r_wrap(type_Container & c);
+    }
+}
+namespace AntonaStandard::Utilities{
     // class型容器的包装器的具体化版本
     template <typename type_classTypeContainer>
     struct reverse_wrapper {

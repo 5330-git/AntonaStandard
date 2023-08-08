@@ -1,8 +1,8 @@
 #include <iostream>
 #include <queue>
-#include "AutoNode.h"
+#include "Utilities/AutoNode.h"
 using namespace std;
-using namespace AntonaStandard;
+using namespace AntonaStandard::Utilities;
 template<typename type_Key>
 class TreeNode:public AutoNode<type_Key>{
 public:

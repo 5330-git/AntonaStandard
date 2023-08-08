@@ -12,6 +12,7 @@
 | v-1.0.1 | 修改createNew和getSelf的命名为copy和clone使之更加满足原型模式的命名<br />修复删除委托(-=)中未找到目标时传入的参数内存泄漏的问题 | 2022/12/30 |
 | v-1.1.0 | - 参考了包装器是他的::function的模板写法，解决了原来Delegate<void,void>增加无返回值无参数类型（void(void)）型报错的问题，现在正确的写法是Delegate<void()>或Delegate<void(void)><br />\- 添加了copy的无参数构造版本,修改了左值引用复制构造函数和左值引用赋值运算符的函数体<br />\- 标准库std::function与我们的BaseFuncPointerContainer实现办法类似，暂时不考虑用std::function替换我们的架构 | 2023/1/1   |
 | v-2.0.0 | -通过std::remove_reference实现了将引用转化成值类型的,使得返回值为引用类型的函数的返回值得以保存<br />-添加了事件委托Delegate的返回值type具体化版本，使得返回值为void的事件委托不返回线性表<br />\- 由于返回值存到线性表中有时间成本，为返回值非void的事件委托添加了call_without_return接口，以无返回值的形式调用 | 2023/1/1   |
+| v-2.1.0 | 修改命名空间从 `AntonaStandard` 到 `AntonaStandard::Utilities` | 2023/8/8   |
 
 
 
@@ -174,7 +175,7 @@ Delegate<int&(int&)> del2;
 
 ```cpp
 del += newDelegate(A::s_i_v_A);
-del += newDelegate(a,a.i_v_A);		// 注意改写法只在Windows下不会报错，在Linux下需要写成：
+del += newDelegate(a,a.i_v_A);		// 注意该写法只在Windows下不会报错，在Linux下需要写成：
 // del += newDelegate(a,&A::i_v_A)
 del += newDelegate(i_v);
 

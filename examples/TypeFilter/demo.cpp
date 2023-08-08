@@ -1,7 +1,7 @@
 #include <iostream>
-#include "TypeFilter.h" 
+#include "Utilities/TypeFilter.h" 
 using namespace std;
-using namespace AntonaStandard;
+using namespace AntonaStandard::Utilities;
 
 class Base{
 public:

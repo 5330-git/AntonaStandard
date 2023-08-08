@@ -7,7 +7,7 @@ include_directories(${IncludePATH})
 set(CMAKE_CXX_STANDARD 20)
 # 生成动态链接的可执行文件
 add_executable(demo_AddSem demo1.cpp)
-target_link_libraries(demo_AddSem DAntonaStandard)
+target_link_libraries(demo_AddSem SAntonaStandard)
 
 add_executable(demo_SemSet demo2.cpp)
-target_link_libraries(demo_SemSet DAntonaStandard)
+target_link_libraries(demo_SemSet SAntonaStandard)

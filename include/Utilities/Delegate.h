@@ -7,8 +7,8 @@
 #include "Exception.h"
 
 
-#define AntonaStandard_Delegate_VERSION "2.0.0"
-#define AntonaStandard_Delegate_EDIT_TIME "2023/1/1"
+#define AntonaStandard_Delegate_VERSION "2.1.0"
+#define AntonaStandard_Delegate_EDIT_TIME "2023/8/8"
 #define AntonaStandard_Delegate_AUTHOR "Anton"
 
 /*
@@ -24,52 +24,50 @@
 *                     - 由于返回值存到线性表中有时间成本，为返回值非void的事件委托添加了call_without_return接口，以无返回值的形式调用
 *   2023/1/2    2.0.1 - 修改了项目的宏信息
 *
-*
+*   2023/8/8  v-2.1.0  修改命名空间从 AntonaStandard 到 AntonaStandard::Utilities
 *
 */
 
 // 前置声明：forward declaration
 namespace AntonaStandard{
-    // 抽象基类，为不同类型指针的存储提供多态接口
-template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
-class BaseFuncPointerContainer;
+    namespace Utilities{
+            // 抽象基类，为不同类型指针的存储提供多态接口
+        template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
+        class BaseFuncPointerContainer;
 
-    // 存储类非静态成员函数的函数指针的容器，由BaseFuncPointerContainer派生
-template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
-class MethodFuncPointerContainer;
+            // 存储类非静态成员函数的函数指针的容器，由BaseFuncPointerContainer派生
+        template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
+        class MethodFuncPointerContainer;
 
-    // 存储普通函数和静态成员函数指针的容器(普通函数和静态成员函数的指针属性相同)，由BaseFuncPointerContainer派生 
-template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
-class Static_NormalFuncPointerContainer;
+            // 存储普通函数和静态成员函数指针的容器(普通函数和静态成员函数的指针属性相同)，由BaseFuncPointerContainer派生 
+        template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
+        class Static_NormalFuncPointerContainer;
 
-    // 委托类，以聚合的方式多态存储保存函数指针的容器类(这里声明就可以了不需要特化)
-template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK>
-class Delegate;
+            // 委托类，以聚合的方式多态存储保存函数指针的容器类(这里声明就可以了不需要特化)
+        template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK>
+        class Delegate;
 
-//     // 特殊委托类型，保存的函数指针返回值为void
-// template<typename... type_PARAMETERS_PACK>
-// class Delegate<void,type_PARAMETERS_PACK...>;
 
-    // 为指针容器创建提供统一接口
-        // 返回普通函数或静态成员函数的重载版本
-template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK>
-Static_NormalFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>*
-newDelegate( type_RETURN_VALUE(*func_ptr)(type_PARAMETERS_PACK...) );      // 注意指针类型的声明
+            // 为指针容器创建提供统一接口
+                // 返回普通函数或静态成员函数的重载版本
+        template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK>
+        Static_NormalFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>*
+        newDelegate( type_RETURN_VALUE(*func_ptr)(type_PARAMETERS_PACK...) );      // 注意指针类型的声明
 
-        // 返回非静态成员函数容器的重载版本
-template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
-MethodFuncPointerContainer<type_OBJECT,type_RETURN_VALUE,type_PARAMETERS_PACK...>*
-newDelegate(type_OBJECT* obj_ptr, type_RETURN_VALUE(type_OBJECT::*func_ptr)(type_PARAMETERS_PACK...)); 
+                // 返回非静态成员函数容器的重载版本
+        template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
+        MethodFuncPointerContainer<type_OBJECT,type_RETURN_VALUE,type_PARAMETERS_PACK...>*
+        newDelegate(type_OBJECT* obj_ptr, type_RETURN_VALUE(type_OBJECT::*func_ptr)(type_PARAMETERS_PACK...)); 
 
-template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
-MethodFuncPointerContainer<type_OBJECT,type_RETURN_VALUE,type_PARAMETERS_PACK...>*
-newDelegate(type_OBJECT& obj_ptr, type_RETURN_VALUE(type_OBJECT::*func_ptr)(type_PARAMETERS_PACK...)); 
-
+        template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
+        MethodFuncPointerContainer<type_OBJECT,type_RETURN_VALUE,type_PARAMETERS_PACK...>*
+        newDelegate(type_OBJECT& obj_ptr, type_RETURN_VALUE(type_OBJECT::*func_ptr)(type_PARAMETERS_PACK...)); 
+    }
 }
 
 // 模板类声明： declaration of template class
 
-namespace AntonaStandard{
+namespace AntonaStandard::Utilities{
     // 抽象基类
     template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
     class BaseFuncPointerContainer{
@@ -248,7 +246,7 @@ namespace AntonaStandard{
 }
 
 // 相关函数定义
-namespace AntonaStandard{
+namespace AntonaStandard::Utilities{
     // 定义存储非静态成员函数的容器类
         // 判断是否是同类型，用typeid进行比较
     template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
@@ -383,7 +381,7 @@ namespace AntonaStandard{
         delete other_ptr;
         other_ptr = nullptr;
         // 循环正常结束，说明没有重复的函数指针,要删除的函数指针未找到，抛出异常，由客户端进行解决
-        throw AntonaStandard::NotFound_Error("The function pointer was not found,fail to delete its container!");
+        throw AntonaStandard::Utilities::NotFound_Error("The function pointer was not found,fail to delete its container!");
         
     }
 
@@ -525,7 +523,7 @@ template<typename... type_PARAMETERS_PACK>
         delete other_ptr;
         other_ptr = nullptr;
         // 循环正常结束，说明没有重复的函数指针,要删除的函数指针未找到，抛出异常，由客户端进行解决
-        throw AntonaStandard::NotFound_Error("The function pointer was not found,fail to delete its container!");
+        throw AntonaStandard::Utilities::NotFound_Error("The function pointer was not found,fail to delete its container!");
         
     }
 

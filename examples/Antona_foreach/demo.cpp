@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
-#include "Antona_foreach.h"
+#include "Utilities/Antona_foreach.h"
 using namespace std;
-using namespace AntonaStadandard;
+using namespace AntonaStandard::Utilities;
 int main() {
     int a[] = {1,2,3};
     const char* s[] = {"hello","world!","!"};
