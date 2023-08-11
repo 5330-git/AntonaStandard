@@ -8,21 +8,7 @@
 
 #### Installation 
 
-1. The Project include the library files which has been already compiled under directory `lib` 
-
-   ```bash
-   ../lib
-   ├── CMakeLists.txt
-   ├── Linux
-   │   ├── libDAntonaStandard.so		# dynamic or shared library in Linux
-   │   └── libSAntonaStandard.a		# static library in Linux
-   └── Windows
-       ├── libDAntonaStandard.dll		# dynamic or shared library in Windows
-       ├── libDAntonaStandard.dll.a
-       └── libSAntonaStandard.a		# static library in Windows
-   ```
-
-2. Also, you can compile or build the project by yourself according the following command(To keep the directory clean,I suggest you compile or build this project under directory `build`)
+1.  You can compile or build the project by yourself according the following command(To keep the directory clean,I suggest you compile or build this project under directory `build` , the `build` directory will be ignored if you add or commit the modification to the git store in default)
 
    **Linux(Ubuntu 22.04): ** 
 
@@ -95,6 +81,7 @@
       ```
 
 
+
 **Attention:  the demo program may complain "can not find \*.dll" ,so you can copy the library files from `./lib/Windows` to `bin` to make the program work normally** 
 
 #### History Versions
@@ -122,6 +109,8 @@
 2023/7/9    AntonaStandard-v-7.1.0 Perfect the cmake building files, it can build different kind of libraries and excutable file according to different platform. There are also several modification of project Reflection,Filter,Sem_Extension.
 
 2023/8/8   AntonaStandard-v-8.0.0 Modified plenty of `namespace` s and the structure of directory `include` . At the mean time, added Threads pool .
+
+2023/8/11 AntonaStandard-v-8.0.1 Add `.gitignore` to let **git tools** ignore the directories `bin` and `build` also `lib` (It means this project will not provide libraries that compiled from v-8.0.1 , but you can still make them by using cmake and make commands)
 
 #### Author's Blog
 

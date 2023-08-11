@@ -3,24 +3,9 @@
 #### 介绍
 自定义的库，里面编写了一些常用的工具
 
-
 #### 安装教程
 
-1. 项目中已经编译好了静态和动态库文件，在 `lib` 目录下
-
-   ```bash
-   ../lib
-   ├── CMakeLists.txt
-   ├── Linux
-   │   ├── libDAntonaStandard.so		# dynamic or shared library in Linux
-   │   └── libSAntonaStandard.a		# static library in Linux
-   └── Windows
-       ├── libDAntonaStandard.dll		# dynamic or shared library in Windows
-       ├── libDAntonaStandard.dll.a
-       └── libSAntonaStandard.a		# static library in Windows
-   ```
-
-2. 另外可以手动构建库文件,以下命令将同时对示例代码进行构建（为了保证路径的整洁，建议在build目录下构建）：
+1. 需要手动构建库文件,以下命令将同时对示例代码进行构建（为了保证路径的整洁，建议在build目录下构建）：
 
    **Linux(Ubuntu 22.04): ** 
 
@@ -46,7 +31,7 @@
      mingw32-make.exe # 更据build下的Makefile文件自动构建库文件和示例文件
      ```
 
-3. 库文件使用方法
+2. 库文件使用方法
 
    **G++** 命令
 
@@ -123,6 +108,8 @@
 2023/7/9   AntonaStandard-v-7.1.0 完善了cmake构建文件，可以根据平台的不同构建不同版本的库文件和示例源文件。同时对反射库Rflection 类型过滤器Filter 信号量扩展Sem_Extension进行了一定的修改
 
 2023/8/8 AntonaStandard-v-8.0.0 修改大量文件的命名空间，修改了include下的文件结构，新增线程池库
+
+2023/8/11 AntonaStandard-v-8.0.1 添加 `.gitignore` 文件，忽略`bin`目录和`build`目录以及 `lib` （这意味着自版本 v-8.0.1起不再提供提前编译好的库文件）
 
 #### 原作者博客
 
