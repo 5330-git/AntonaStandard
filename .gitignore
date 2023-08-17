@@ -5,3 +5,7 @@ bin
 # ignore library direactory 忽略掉库文件目录下的库文件
 lib
 !CMakeLists.txt
+# igonre VSCode configuration directory .vscode 忽略vscode配置文件夹 .vscode
+.vscode
+# ignore demolib directory of Example DllSupport 忽略示例项目中DllSupport 的演示动态库
+examples/DllSupport/demolib

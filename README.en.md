@@ -112,6 +112,10 @@
 
 2023/8/11 AntonaStandard-v-8.0.1 Add `.gitignore` to let **git tools** ignore the directories `bin` and `build` also `lib` (It means this project will not provide libraries that compiled from v-8.0.1 , but you can still make them by using cmake and make commands)
 
+2023/8/17 AntonaStandard-v-9.0.0 Update file `.gitignore` , add new directories which should be ignored by git. Add cross platform (multi platform) support (AntonaStandard provides cross platform api for explicitly link (hot-loading) dynamic library.Update project Exception and optimize the directories structure. 
+
 #### Author's Blog
+
+
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 

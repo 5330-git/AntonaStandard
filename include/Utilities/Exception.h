@@ -2,8 +2,8 @@
 #define EXCEPTION_H
 #include <stdexcept>
 
-#define AntonaStandard_Exception_VERSION "1.3.0"
-#define AntonaStandard_Exception_EDIT_TIME "2023/8/8"
+#define AntonaStandard_Exception_VERSION "1.4.0"
+#define AntonaStandard_Exception_EDIT_TIME "2023/8/17"
 #define AntonaStandard_Exception_AUTHOR "Anton"
 
 
@@ -14,6 +14,7 @@
 *	2023/1/2   v-1.1.1 更改了项目的宏信息
 *   2023/2/24  v-1.2.0 添加Conflict_Error 用于处理系统中出现的冲突错误
 *   2023/8/8   v-1.3.0  修改命名空间从 AntonaStandard 到 AntonaStandard::Utilities
+*   2023/8/17  v-1.4.0  为跨平台支持项目中的动态库支持提供三个新定义的异常
 */
 
 
@@ -27,6 +28,9 @@ namespace AntonaStandard{
 		class  NullPointer_Error;
 		class  NotFound_Error;
 		class  Conflict_Error;
+		class  FailToLoadDll_Error;
+		class  FailToUnloadDll_Error;
+		class  FailToGetFunction_Error;
 	}
 }
 
@@ -63,6 +67,18 @@ namespace AntonaStandard::Utilities{
 	class Conflict_Error:public std::logic_error{
 	public:
 		Conflict_Error(const char* msg):std::logic_error(msg){};
+	};
+	class FailToLoadDll_Error:public std::runtime_error{
+	public:
+		FailToLoadDll_Error(const char* msg):std::runtime_error(msg){};
+	};
+	class FailToUnloadDll_Error:public std::runtime_error{
+	public:
+		FailToUnloadDll_Error(const char* msg):std::runtime_error(msg){};
+	};
+	class FailToGetFunction_Error:public std::runtime_error{
+	public:
+		FailToGetFunction_Error(const char* msg):std::runtime_error(msg){};
 	};
 }
 
