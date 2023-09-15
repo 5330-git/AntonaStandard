@@ -1,5 +1,6 @@
 # igonre 'make' directory build 忽略掉构建文件夹build
 build
+build1
 # igonre binary executable files directory 忽略掉二进制可执行文件文件夹bin
 bin
 # ignore library direactory 忽略掉库文件目录下的库文件

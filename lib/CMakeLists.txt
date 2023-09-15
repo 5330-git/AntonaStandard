@@ -20,3 +20,8 @@ endif()
 add_library(D${PROJECT_NAME} SHARED ${SRC})     # libDAntonaStandard.so 或 libDAntonaStandard.dll libDAntonaStandard.dll.a
 # 生成静态库
 add_library(S${PROJECT_NAME} STATIC ${SRC})     # libSAntonaStandard.a
+# Windows平台需要连接套接字库
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+    target_link_libraries(S${PROJECT_NAME} PRIVATE wsock32 ws2_32)
+    target_link_libraries(D${PROJECT_NAME} PRIVATE wsock32 ws2_32)
+endif()

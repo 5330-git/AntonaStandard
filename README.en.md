@@ -10,7 +10,7 @@
 
 1.  You can compile or build the project by yourself according the following command(To keep the directory clean,I suggest you compile or build this project under directory `build` , the `build` directory will be ignored if you add or commit the modification to the git store in default)
 
-   **Linux(Ubuntu 22.04): ** 
+   **Linux(Ubuntu 22.04)**: 
 
    - change your current path to project directory `build` .Then input threse commands:
 
@@ -113,6 +113,8 @@
 2023/8/11 AntonaStandard-v-8.0.1 Add `.gitignore` to let **git tools** ignore the directories `bin` and `build` also `lib` (It means this project will not provide libraries that compiled from v-8.0.1 , but you can still make them by using cmake and make commands)
 
 2023/8/17 AntonaStandard-v-9.0.0 Update file `.gitignore` , add new directories which should be ignored by git. Add cross platform (multi platform) support (AntonaStandard provides cross platform api for explicitly link (hot-loading) dynamic library.Update project Exception and optimize the directories structure. 
+
+2023/9/15 AntonaStandard-v-9.1.0-Beta Update file `.gitignore` . Add cross platform support : An cross platform TCP/IPV4 Socket Communication Solution. In addition `AntonaStandard-v-9.1.0-Beta` is a testing version that means the version may be modified a lot in next version
 
 #### Author's Blog
 
