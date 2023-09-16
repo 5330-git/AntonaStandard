@@ -11,6 +11,7 @@
 #include "Utilities/Exception.h"
 #include <stdexcept>
 #include <sstream>
+#include <cstring>
 
 // 条件包含不同平台的套接字库
 #ifdef AntonaStandard_PLATFORM_WINDOWS
@@ -27,9 +28,9 @@
 namespace AntonaStandard{
     namespace MultiPlatformSupport{
         class SocketDataBuffer;     // 数据传输使用的流对象缓冲区
-        // class SocketAddress;    // 存储ip地址与协议的基类型
-        // class SocketAddressV4;  // 存储ipv4地址与协议
-        // class SocketAddressV6;  // 存储ipv6地址与协议
+        class SocketAddress;    // 存储ip地址与协议的基类型
+        class SocketAddressV4;  // 存储ipv4地址与协议
+        class SocketAddressV6;  // 存储ipv6地址与协议
         class Socket;           // 封装套接字描述符以及ip地址
         class SocketCommunication;  // 封装套接字通信的方法
     }
@@ -45,28 +46,55 @@ namespace AntonaStandard::MultiPlatformSupport{
         ipv4 = AF_INET,           // ipv4
         ipv6 = AF_INET6           // ipv6
     };
-    // class SocketAddress{
-    // protected:
-    //     void* addr_in;
-    // public:
-    //     virtual void* getAddrIn()=0;
-    //     virtual void setAddr(SocketProtocol protocol,
-    //                             SocketType type,
-    //                             const char* ip,
-    //                             unsigned short port)=0;
-    //     virtual void swapAddr(SocketAddress& addr);
-    //     virtual void swapAddr(SocketAddress&& addr);
-    // };
-    // class SocketAddressV4:public SocketAddress{
-    // public:
-    //     SocketAddressV4();                  // 默认构造函数，给addr_in new 一个sockaddr_in
-    //     SocketAddressV4(const char* ip, unsigned short port);
-    //     SocketAddressV4(const std::string& ip, unsigned short port);
-    //     SocketAddressV4(const SocketAddressV4& addr);
-    //     SocketAddressV4(SocketAddressV4&& addr);
-    //     ~SocketAddressV4();
-    //     // 获取ip地址
-    // };
+
+    class SocketAddress{
+    protected:
+        void* addr_in=nullptr;      // 注意一定要初始化指针
+    public:
+        virtual void* getAddrIn();
+        virtual size_t getAddrInSize()=0;
+        virtual void setAddr(const char* ip,
+                                unsigned short port)=0;
+        virtual std::string getIp()=0;
+        virtual unsigned short getPort()=0;
+        virtual SocketProtocol getProtocol()=0;
+        virtual ~SocketAddress();
+        virtual SocketAddress* copy()=0;
+    };
+    class SocketAddressV4:public SocketAddress{
+    public:
+        SocketAddressV4();                  // 默认构造函数，给addr_in new 一个sockaddr_in
+        SocketAddressV4(SocketAddressV4& addr);           // 内部完成addr_in指针的交换
+        SocketAddressV4(SocketAddressV4&& addr);
+        ~SocketAddressV4();
+        // 重写获取sockaddr大小的函数
+        virtual size_t getAddrInSize()override;
+        // 重写setAddr设置地址字段
+        virtual void setAddr(const char* ip,
+                                unsigned short port)override;
+        virtual std::string getIp()override;
+        virtual unsigned short getPort()override;
+        virtual SocketProtocol getProtocol()override;
+        virtual SocketAddressV4* copy()override;
+    };
+    class SocketAddressV6:public SocketAddress{
+    public:
+        SocketAddressV6();                  // 默认构造函数，给addr_in new 一个sockaddr_in
+        SocketAddressV6(SocketAddressV6& addr);           // 内部完成addr_in指针的交换
+        SocketAddressV6(SocketAddressV6&& addr);
+        ~SocketAddressV6();
+        // 重写获取sockaddr大小的函数
+        virtual size_t getAddrInSize()override;
+        // 重写setAddr设置地址字段
+        virtual void setAddr(const char* ip,
+                                unsigned short port)override;
+        virtual std::string getIp()override;
+        virtual unsigned short getPort()override;
+        virtual SocketProtocol getProtocol()override;
+        virtual SocketAddressV6* copy()override;
+        
+    };
+
     // 使用strIngbuffer
     class SocketDataBuffer:public std::streambuf{
         // 使用string作为底层的缓冲容器
@@ -114,16 +142,12 @@ namespace AntonaStandard::MultiPlatformSupport{
         ;
     private:
         Socketid_t socketid;
-        sockaddr_in addr_in;
-        unsigned short port_id;
+        SocketAddress* address;
     public:
-        inline sockaddr_in& getAddrIn(){
-            return this->addr_in;
+        inline SocketAddress* getAddress(){
+            return this->address;
         }
-        void setProtocol(SocketProtocol protocol);
-        void setPort(unsigned short port);
-        void setAddress(const char* address);
-        void setAddress(const std::string& address);
+        void setAddress(SocketAddress* addr);
         
     public:
         inline Socketid_t getSocketId() const{
@@ -133,6 +157,8 @@ namespace AntonaStandard::MultiPlatformSupport{
             this->socketid = skt_id;
         }
         Socket();
+        Socket(Socket& socket);
+        Socket(Socket&& socket);
         ~Socket();
     };
 
