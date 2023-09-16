@@ -116,6 +116,8 @@
 
 2023/9/15 AntonaStandard-v-9.1.0-Beta Update file `.gitignore` . Add cross platform support : An cross platform TCP/IPV4 Socket Communication Solution. In addition `AntonaStandard-v-9.1.0-Beta` is a testing version that means the version may be modified a lot in next version
 
+2023/9/15 AntonaStandard-v-9.1.0 I redesigned the class to package IP address and Port better. Now this project provides an easy and usable cross platform **TCP/IPV4** and **TCP/IPV6** Socket communication solution.
+
 #### Author's Blog
 
 

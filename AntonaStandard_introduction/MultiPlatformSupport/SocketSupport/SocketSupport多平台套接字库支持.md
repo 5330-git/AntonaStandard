@@ -6,9 +6,10 @@
 
 ## 项目版本
 
-| 版本号  | 版本说明                                  | 时间      |
-| ------- | ----------------------------------------- | --------- |
-| v-0.0.0 | 实现套接字的跨平台封装，支持IPV4的TCP通信 | 2023/9/15 |
+| 版本号  | 版本说明                                          | 时间      |
+| ------- | ------------------------------------------------- | --------- |
+| v-0.0.0 | 实现套接字的跨平台封装，支持IPV4的TCP通信         | 2023/9/15 |
+| v-1.0.0 | 重新多态封装IP地址与端口，支持IPV4和IPV6的TCP通信 | 2023/9/16 |
 
 ## 版本计划
 
@@ -65,11 +66,12 @@ c_send--请求数据-->s_recv
 
 ### 数据结构对比
 
-| 功能                                                         | Windows                                             | Linux         | 差别                                                         |
-| ------------------------------------------------------------ | --------------------------------------------------- | ------------- | ------------------------------------------------------------ |
-| 存储当前主机的ip 和 端口信息                                 | `sockaddr` 或 `SOCKADDR` 同一结构体的不同别名       | `sockaddr`    | 没有区别                                                     |
-| 用于向socketaddr写入数据的数据结构，因为socketaddr中的数据字段（ip 和端口是连续存储的，不方便写入数据） | `sockaddr_in` 或 `SOCKADDR_IN` 同一结构体的不同别名 | `sockaddr_in` | 没有区别                                                     |
-| 存储ip地址                                                   | `addr_in`                                           | `addr_in`     | 内容有所差别，一般设置地址时不会直接访问这个结构体，可以忽略这些差异 |
+| 功能                                                         | Windows                                             | Linux          | 差别                                                         |
+| ------------------------------------------------------------ | --------------------------------------------------- | -------------- | ------------------------------------------------------------ |
+| 存储当前主机的ip 和 端口信息                                 | `sockaddr` 或 `SOCKADDR` 同一结构体的不同别名       | `sockaddr`     | 没有区别                                                     |
+| 用于向socketaddr写入ipv4数据的数据结构，因为socketaddr中的数据字段（ip 和端口是连续存储的，不方便写入数据） | `sockaddr_in` 或 `SOCKADDR_IN` 同一结构体的不同别名 | `sockaddr_in`  | 没有区别                                                     |
+| 用于向socketaddr写入ipv6数据的数据结构，因为socketaddr中的数据字段（ip 和端口是连续存储的，不方便写入数据） | `sockaddr_in6`                                      | `sockaddr_in6` | 没有区别                                                     |
+| 存储ip地址                                                   | `addr_in`                                           | `addr_in`      | 内容有所差别，一般设置地址时不会直接访问这个结构体，可以忽略这些差异 |
 
 
 
@@ -92,7 +94,7 @@ c_send--请求数据-->s_recv
   ```
 
 
-- ==另外本项目暂时还未解决，提前将Windows 套接字库链接到项目库文件的技术，使得第三方可以不用手动链接套接字库的技术。因此当你的项目中使用了本项目，请手动连接Windows套接字库== 
+- ==另外本项目暂时还未解决:  提前将Windows 套接字库链接到项目库文件的技术，使得第三方可以不用手动链接套接字库的技术。因此当你的项目中使用了本项目，请手动连接Windows套接字库==  
 
 - 另外Windows平台下的套接字需要进行加载，然后在使用结束后释放掉
 
@@ -124,53 +126,51 @@ c_send--请求数据-->s_recv
 
   
 
-## 封装策略（实验阶段）
+## 封装策略
 
-- 只进行**较低限度**的封装，因为本项目主要是为其它项目提供跨平台支持，不宜过于复杂，要保证 `Linux` 端和 `Windows` 端的流程完全相同 
+- 只进行**较低限度** 的封装(**只涉及套接字的封装，不涉及服务端和客户端代码的封装**)，因为本项目主要是为其它项目提供跨平台支持，不宜过于复杂，要保证 `Linux` 端和 `Windows` 端的流程完全相同 
 - 需要封装的数据
-  - 套接字地址,封装到类 `SocketAddress` 
-    - 原生的 `sockaddr` 需要使用 `sockaddr_in` 来写入数据，然后进行指针类型转换，用起来比较麻烦，因此使用 `SocketAddress` 封装 `sockaddr`
-    - 内置枚举，封装协议族 `Protocol` ：
-      - `ipv6` ：ipv6 协议
-      - `ipv4` ：ipv4 协议
-    - 内置枚举，封装套接字类型 `SocketType` 
-      - `Stream` : 流式传输协议，其对应的默认类型为 TCP
-      - `Dgram` : 报文传输协议，其对应的默认类型为 UDP
-    - 设置协议 `void setProtocol(Protocol ptc)`  
-    - 设置套接字类型 `void setSocketType(SocketType sktType,int defalut=0)` 
-    - 设置地址 `void setAddress(std::string& addr)`  
+  - 套接字协议类型枚举 `SocketProtocol` 
+    - `ipv6` ：ipv6 协议
+    - `ipv4` ：ipv4 协议
+
+  - 套接字协议实现类型 `SocketType` 
+    - `Stream` : 流式传输协议，其对应的默认类型为 TCP
+    - `Dgram` : 报文传输协议，其对应的默认类型为 UDP
+
+  - 套接字IP地址和端口封装到抽象类 `SocketAddress` 
+    - 原生的 `sockaddr` 需要使用 `sockaddr_in` 和 `sockaddr_in6` 来写入数据，然后进行指针类型转换，用起来比较麻烦，因此使用 `SocketAddress` 封装 `sockaddr` 
+    - 提供功能：
+      - 存储端口
+      - 获取端口
+      - 存储ip地址
+      - 获取ip地址
+      - 存储`sockaddr_in` (1pv4) 或者 `sockaddr_in6` (1pv6) 
+      - 设置地址：兼容ipv4和ipv6
+      - 获取协议
+    - 派生类 （具体实现基类提供的功能接口）
+      - `SocketAddressV4` 通过 `void*` 指针存储 `sockaddr_in` 结构
+      - `SocketAddressV6` 通过 `void*` 指针存储 `sockaddr_in6` 结构
   - 套接字，封装到类 `Socket` ：
-    - 因为`Windows`端和`Linux`端的套接字类型不相同
-    - 可以封装到一个类`Socket`，需要使用条件编译
-      - 通过一个成员函数`getId()` 获取其描述符 
-      - 设置对应连接的主机地址`void setTargetAddress(const SocketAddress& addr)` 
-    - 套接字往往和地址同时使用，所以 `Socket` 内部会保存一个 `SocketAddress` 对象：
-      - **服务端** 调用bind绑定本地端口时会在其内部创建一个新的 `SocketAddress`, 设置服务端的ip
-      - **服务端** 调用accept时，会接收到客户端的**套接字描述符**以及 **地址数据socketaddr** ，会创建一个新的套接字，内部接收描述符和地址数据。
-      - **客户端** 需要手动设置服务器的IP，即先创建一个`SocketAddress` 设置好地址协议和套接字类型后，通过`setTargetAddress` ,将地址放入套接字。
-  - 当套接字的类型过多，可以使用 **工厂模式** ，设置一个工厂（使用反射`AntonaStandard::Utilities::Reflection`），自动生产不同类型的套接字。
-  - 需要传输和接收的数据：`SocketDataBuffer` 
+    - 因为`Windows`端和`Linux`端的套接字类型不相同，可以封装到一个类`Socket`，需要使用条件编译
+    - 套接字往往和地址同时使用，所以 `Socket` 内部会保存一个 `SocketAddress` 指针，根据`SocketCommunication::createSocket` 的参数来决定实例化 `SocketAddressV4` 还是 `SocketAddressV6` 对象
+  - 传输和接收数据的容器：`SocketDataBuffer` 
     - 该类派生自 `stringbuf` ,可以供标准库的流对象 **写入** 和 **读取** 
-    - 发送时发送**写入区** 的数据
-      - 写入区起始点 `pbase()`
-      - 写入区写入点 `pptr()` 
-      - 写入区结束点 `epptr()` 
-    - 接收时将接收的数据写入到**读取区**
-      - 读取区起始点 `eback()`
-      - 读取区读取点 `gptr()`
-      - 读取区结束点 `egptr()` 
+
 - 需要封装的接口
   - 接口可以封装到一个类 `SocketCommunication`  
     - 构造函数中完成对 `Windows` 平台下套接字库的加载，`Linux` 平台可以设置为空
     - 析构函数中完成对 `Windows` 平台下套接字库的释放，`Linux` 平台可以设置为空
-    - (**服务端**)将套接字绑定到本地端口 `void bindSocket(Socket& sock,unsigend short port)` 
+    - (**服务端**)将套接字绑定到本地端口 
       - 地址以及协议会保存到套接字类的指针中
-    - (**服务端**)设置监听 `void setListien(Socket& sock)` 
-    - (**服务端**)接受客户端的连接 `Socket acceptConnection()` 
-    - (**客户端**)发出向服务端的连接请求 `void connectHost(Socket& host)` 
-    - 发送数据 `void send(vector<bool>& buffer)` 需要指定一次发送的数据量,需要注意的时Windows下每次发送的数据最大值不会超过int,因此在Windows平台下可能需要检查buffer的长度是否超过Int最大值
-    - 接收数据 `size_t receive(SocketDataBuffer& buffer)` 如果缓冲区不够则需要多次调用，每次回返回接收到的数据长度。
+    - (**服务端**)设置监听 
+    - (**服务端**)接受客户端的连接 
+    - (**客户端**)发出向服务端的连接请求 
+    - 发送数据: 使用缓冲区对象 `SocketDataBuffer` 
+    - 接收数据: 使用缓冲区对象 `SocketDataBuffer` 
 
 ## 注意事项
 
 - 客户端在发完数据后需要设置休眠等待服务端响应，否则可能造成连接的问题
+- 请注意端口的分配问题，如果端口号偏小，可能会**绑定**错误。(Windows 套接字错误码 10049)
+- 如果在Windows平台调用本项目出现符号未定义的错误，请手动链接 `ws2_32` 库。
