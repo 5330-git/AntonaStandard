@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <sstream>
 #include <cstring>
+#include <memory>
+#include <algorithm>
 
 // 条件包含不同平台的套接字库
 #ifdef AntonaStandard_PLATFORM_WINDOWS
@@ -22,6 +24,7 @@
     #include <sys/types.h>
     #include <arpa/inet.h>
     #include <sys/socket.h>
+    #define INVALID_SOCKET ~0
 #endif
 
 
@@ -36,6 +39,7 @@ namespace AntonaStandard{
     }
 };
 
+
 namespace AntonaStandard::MultiPlatformSupport{
     enum SocketType{
         Stream = SOCK_STREAM,       // 流式协议
@@ -49,9 +53,9 @@ namespace AntonaStandard::MultiPlatformSupport{
 
     class SocketAddress{
     protected:
-        void* addr_in=nullptr;      // 注意一定要初始化指针
+        std::shared_ptr<void> addr_in;      // 注意一定要初始化指针
     public:
-        virtual void* getAddrIn();
+        virtual std::shared_ptr<void> getAddrIn();
         virtual size_t getAddrInSize()=0;
         virtual void setAddr(const char* ip,
                                 unsigned short port)=0;
@@ -59,7 +63,7 @@ namespace AntonaStandard::MultiPlatformSupport{
         virtual unsigned short getPort()=0;
         virtual SocketProtocol getProtocol()=0;
         virtual ~SocketAddress();
-        virtual SocketAddress* copy()=0;
+        virtual std::shared_ptr<SocketAddress> copy()=0;
     };
     class SocketAddressV4:public SocketAddress{
     public:
@@ -75,7 +79,7 @@ namespace AntonaStandard::MultiPlatformSupport{
         virtual std::string getIp()override;
         virtual unsigned short getPort()override;
         virtual SocketProtocol getProtocol()override;
-        virtual SocketAddressV4* copy()override;
+        virtual std::shared_ptr<SocketAddress> copy()override;
     };
     class SocketAddressV6:public SocketAddress{
     public:
@@ -91,7 +95,7 @@ namespace AntonaStandard::MultiPlatformSupport{
         virtual std::string getIp()override;
         virtual unsigned short getPort()override;
         virtual SocketProtocol getProtocol()override;
-        virtual SocketAddressV6* copy()override;
+        virtual std::shared_ptr<SocketAddress> copy()override;
         
     };
 
@@ -140,31 +144,45 @@ namespace AntonaStandard::MultiPlatformSupport{
             int
         #endif
         ;
+        friend class SocketCommunication;
     private:
-        Socketid_t socketid;
-        SocketAddress* address;
+        Socketid_t socketid = INVALID_SOCKET;
+        std::shared_ptr<SocketAddress> address;
+        // 以下三个函数只有SocketCommunication 可见
+        Socket();
+        void setAddress(std::shared_ptr<SocketAddress> addr);
+        
+        inline void setSocketId(Socketid_t skt_id){
+            this->socketid = skt_id;
+        }
     public:
-        inline SocketAddress* getAddress(){
+        inline std::shared_ptr<SocketAddress> getAddress(){
             return this->address;
         }
-        void setAddress(SocketAddress* addr);
-        
     public:
         inline Socketid_t getSocketId() const{
             return socketid;
         }
-        inline void setSocketId(Socketid_t skt_id){
-            this->socketid = skt_id;
+        // 支持swap语义
+        void swap(Socket& rhs);
+        bool closable()const{
+            return this->socketid!=INVALID_SOCKET;
         }
-        Socket();
-        Socket(Socket& socket);
+        
+        
+        Socket(Socket& socket)=delete;
+        Socket& operator=(Socket& socket)=delete;
+
+        Socket& operator=(Socket&& socket);
         Socket(Socket&& socket);
         ~Socket();
     };
 
     class SocketCommunication{
-    public:
+    private:
         SocketCommunication();
+    public:
+        static SocketCommunication& get();
         ~SocketCommunication();
         Socket createSocket(SocketProtocol prot,
             SocketType type,unsigned short port,
@@ -182,4 +200,5 @@ namespace AntonaStandard::MultiPlatformSupport{
         size_t receive(Socket& socket,SocketDataBuffer& data);      // 接收数据
     };
 };
+
 #endif

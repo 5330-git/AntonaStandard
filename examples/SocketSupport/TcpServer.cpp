@@ -4,16 +4,15 @@ using namespace std;
 using namespace AntonaStandard::MultiPlatformSupport;
 
 int main(){
-	SocketCommunication socketCommunication;			// 创建套接字通信
-	Socket server_socket = socketCommunication.createSocket(SocketProtocol::ipv4,
+	Socket server_socket = SocketCommunication::get().createSocket(SocketProtocol::ipv4,
 	SocketType::Stream,9999,"127.0.0.1");							// 创建套接字
 	// char ip[32];
 	// inet_ntop(AF_INET,&addr_in.sin_addr,ip,32);						// 获取IP地址
 	// cout<<ip;
 	try{
-		socketCommunication.bindSocket(server_socket);				// 绑定套接字
-	// 设置监听
-	socketCommunication.listenSocket(server_socket);				// 监听套接字
+		SocketCommunication::get().bindSocket(server_socket);				// 绑定套接字
+		// 设置监听
+		SocketCommunication::get().listenSocket(server_socket);				// 监听套接字
 	}
 	catch(std::runtime_error& e){
 		cout<<e.what()<<endl;
@@ -21,7 +20,7 @@ int main(){
 	}
 	// 绑定套接字
 	// 等待连接
-	Socket client_socket = socketCommunication.acceptSocket(server_socket);		// 等待连接
+	Socket client_socket = SocketCommunication::get().acceptSocket(server_socket);		// 等待连接
 	// 接收数据
 	cout<<"开始收集数据"<<endl;
 	SocketDataBuffer buf;
@@ -30,7 +29,7 @@ int main(){
 	system("chcp 65001");
 	while(true){
 
-		size_t len = socketCommunication.receive(client_socket,buf);
+		size_t len = SocketCommunication::get().receive(client_socket,buf);
 
 		if(len == 0){
 			cout<<"断开连接"<<endl;
@@ -40,7 +39,7 @@ int main(){
 		buf.resize(128);
 		stream<<flush;
 		stream<<"hello from server";
-		socketCommunication.send(client_socket,buf);
+		SocketCommunication::get().send(client_socket,buf);
 	}
 	
 	return 0;

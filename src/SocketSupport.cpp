@@ -1,22 +1,15 @@
 #include "MultiPlatformSupport/SocketSupport.h"
+// #include "SocketSupport.h"
 
 namespace AntonaStandard::MultiPlatformSupport{
 
 
-    void Socket::setAddress(SocketAddress* addr) {
-        if(addr == nullptr){
-            throw AntonaStandard::Utilities::NullPointer_Error("Get Null pointer in Socket::setAddress");
-        }
+    void Socket::setAddress(std::shared_ptr<SocketAddress> addr) {
         this->address = addr;
     }
 
     Socket::Socket() { 
-        this->socketid = 0; 
-        this->address = nullptr;
-    }
-
-    Socket::Socket(Socket& socket) {
-        this->address = socket.getAddress()->copy();
+        this->socketid = INVALID_SOCKET; 
     }
 
     Socket::Socket(Socket&& socket) {
@@ -25,19 +18,25 @@ namespace AntonaStandard::MultiPlatformSupport{
     }
 
     Socket::~Socket() {
-        if(this->address){
-            delete this->address;
-            this->address = nullptr;
-        }
+        SocketCommunication::get().closeSocket(*this);
     }
 
+    void Socket::swap(Socket& socket) {
+        std::swap(this->socketid, socket.socketid);
+        std::swap(this->address, socket.address);
+    }
+
+    Socket& Socket::operator=(Socket&& socket) {
+        this->swap(socket);
+        return *this;
+    }
 
     SocketCommunication::SocketCommunication() {
-        // Windows 平台需要加载套接字库,而linux平台不需要做任何操作
-        #ifdef AntonaStandard_PLATFORM_WINDOWS
-            WSADATA wsaData;
-            WSAStartup(MAKEWORD(2, 2), &wsaData);
-        #endif
+    // Windows 平台需要加载套接字库,而linux平台不需要做任何操作
+#ifdef AntonaStandard_PLATFORM_WINDOWS
+        WSADATA wsaData;
+        WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
     }
 
     SocketCommunication::~SocketCommunication() {
@@ -47,16 +46,20 @@ namespace AntonaStandard::MultiPlatformSupport{
         #endif
     }
 
+    SocketCommunication& SocketCommunication::get(){
+        static SocketCommunication instance;
+        return instance;
+    }
     Socket SocketCommunication::createSocket(SocketProtocol protocol,SocketType type, 
         unsigned short port,const char* addr_str,int defualt) {            
             Socket socket;
             switch(protocol){
                 case SocketProtocol::ipv4:
-                    socket.setAddress(new SocketAddressV4);
+                    socket.setAddress(std::make_shared<SocketAddressV4>());
                     socket.getAddress()->setAddr(addr_str,port);
                     break;
                 case SocketProtocol::ipv6:
-                    socket.setAddress(new SocketAddressV6);
+                    socket.setAddress(std::make_shared<SocketAddressV6>());
                     socket.getAddress()->setAddr(addr_str,port);
                     break;
                 default:
@@ -72,7 +75,7 @@ namespace AntonaStandard::MultiPlatformSupport{
             return this->createSocket(prot,type,port,addr_str.c_str(),defualt);
     }
     void SocketCommunication::bindSocket(Socket& socket) {
-        int error = bind(socket.getSocketId(), (sockaddr*)socket.getAddress()->getAddrIn(),
+        int error = bind(socket.getSocketId(), (sockaddr*)socket.getAddress()->getAddrIn().get(),
                             socket.getAddress()->getAddrInSize());
         if (error) {
             // result 不为0，返回错误
@@ -114,7 +117,7 @@ namespace AntonaStandard::MultiPlatformSupport{
         #endif
         
         // 调用accept 将客户端的信息写入Socket对象
-        Socket::Socketid_t clientid = accept(ssocket.getSocketId(), (sockaddr*)client.getAddress()->getAddrIn(), &caddr_len);
+        Socket::Socketid_t clientid = accept(ssocket.getSocketId(), (sockaddr*)(client.getAddress()->getAddrIn().get()), &caddr_len);
         if (clientid < 0) {
             // result 不为0，返回错误
             #ifdef AntonaStandard_PLATFORM_WINDOWS
@@ -132,7 +135,7 @@ namespace AntonaStandard::MultiPlatformSupport{
 
     void SocketCommunication::connectSocket(Socket& ssocket) {
         // 连接ssocket对应主机的套接字
-        int error = ::connect(ssocket.getSocketId(), (sockaddr*)ssocket.getAddress()->getAddrIn(),
+        int error = ::connect(ssocket.getSocketId(), (sockaddr*)ssocket.getAddress()->getAddrIn().get(),
                             ssocket.getAddress()->getAddrInSize());
         if (error) {
             // result 不为0，返回错误
@@ -143,11 +146,15 @@ namespace AntonaStandard::MultiPlatformSupport{
     }
 
     void SocketCommunication::closeSocket(Socket& socket) {
+        if(!socket.closable()){
+            return ;
+        }
         #ifdef AntonaStandard_PLATFORM_WINDOWS
             closesocket(socket.getSocketId());
         #elif AntonaStandard_PLATFORM_LINUX
             close(socket.getSocketId());
         #endif
+        socket.socketid = INVALID_SOCKET;
     }
 
     void SocketCommunication::send(Socket& socket,SocketDataBuffer& data) {
@@ -245,50 +252,37 @@ namespace AntonaStandard::MultiPlatformSupport{
 		this->resize(128);
 	}
 
-    void* SocketAddress::getAddrIn() { 
+    std::shared_ptr<void> SocketAddress::getAddrIn() { 
         return this->addr_in;
     }
 
     SocketAddress::~SocketAddress(){};
 
     SocketAddressV4::SocketAddressV4() {
-        this->addr_in = new sockaddr_in;
+        this->addr_in = std::make_shared<sockaddr_in>();
     }
 
     SocketAddressV4::SocketAddressV4(SocketAddressV4& addr) {
-        if(this->addr_in){
-            // 注意不能直接删除 void* 类型指针
-            delete (sockaddr_in*)this->addr_in;
-            this->addr_in = nullptr;
-        }
-        this->addr_in = new sockaddr_in;
+        this->addr_in = std::make_shared<sockaddr_in>();
         // 基于内存拷贝addr地址数据结构
-        std::memcpy(this->addr_in,addr.getAddrIn(),sizeof(sockaddr_in));
+        std::memcpy(this->addr_in.get(),addr.getAddrIn().get(),sizeof(sockaddr_in));
     }
 
     SocketAddressV4::SocketAddressV4(SocketAddressV4&& addr) {
-        // 右值对象直接交换sockaddr_in结构
-        if(this->addr_in){
-            // 注意不能直接删除 void* 类型指针
-            delete (sockaddr_in*)this->addr_in;
-            this->addr_in = nullptr;
-        }
-        this->addr_in = addr.addr_in;
-        addr.addr_in = nullptr;
+        this->addr_in.reset();
+        using std::swap;
+        swap(this->addr_in,addr.addr_in);
     }
+
     SocketAddressV4::~SocketAddressV4() {
-        if(this->addr_in){
-            // 注意不能直接删除 void* 类型指针
-            delete (sockaddr_in*)this->addr_in;
-            this->addr_in = nullptr;
-        }
     }
+
     size_t SocketAddressV4::getAddrInSize() { 
         return sizeof(sockaddr_in);
     }
     void SocketAddressV4::setAddr(const char* ip, unsigned short port) {
         // 首先将addr_in进行转换，方便操作
-        sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in;
+        sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in.get();
         // 设置协议 ipv4
         this_addr_in->sin_family = SocketProtocol::ipv4;
         // 设置ip
@@ -299,7 +293,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     std::string SocketAddressV4::getIp() { 
         char temp_ip[20];           // ipv4最长15个字符
         // 首先将addr_in进行转换，方便操作
-        sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in;
+        sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in.get();
         // 获取ip
         auto ret = inet_ntop(SocketProtocol::ipv4,
             &(this_addr_in->sin_addr),
@@ -319,7 +313,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     }
     unsigned short SocketAddressV4::getPort() { 
         // 首先将addr_in进行转换，方便操作
-        sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in;
+        sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in.get();
         // 获取端口
         return ntohs(this_addr_in->sin_port);
     }
@@ -327,37 +321,27 @@ namespace AntonaStandard::MultiPlatformSupport{
         return SocketProtocol::ipv4;
     }
 
-    SocketAddressV4* SocketAddressV4::copy() { 
-        return new SocketAddressV4(*this);    
+    std::shared_ptr<SocketAddress> SocketAddressV4::copy() { 
+        return std::make_shared<SocketAddressV4>(*this);    
     }
 
     SocketAddressV6::SocketAddressV6() {
-        this->addr_in = new sockaddr_in6;
+        this->addr_in = std::make_shared<sockaddr_in6>();
     }
 
     SocketAddressV6::SocketAddressV6(SocketAddressV6& addr) {
-        if(this->addr_in){
-            delete (sockaddr_in6*)this->addr_in;
-            this->addr_in = nullptr;
-        }
-        this->addr_in = new sockaddr_in6;
-        std::memcpy(this->addr_in,addr.getAddrIn(),sizeof(sockaddr_in6));
+        
+        this->addr_in = std::make_shared<sockaddr_in6>();
+        std::memcpy(this->addr_in.get(),addr.getAddrIn().get(),sizeof(sockaddr_in6));
     }
 
     SocketAddressV6::SocketAddressV6(SocketAddressV6&& addr) {
-        if(this->addr_in){
-            delete (sockaddr_in6*)this->addr_in;
-            this->addr_in = nullptr;
-        }
-        this->addr_in = addr.addr_in;
-        addr.addr_in = nullptr;
+        this->addr_in.reset();
+        using std::swap;
+        swap(this->addr_in,addr.addr_in);
     }
 
     SocketAddressV6::~SocketAddressV6() {
-        if(this->addr_in){
-            delete (sockaddr_in6*)this->addr_in;
-            this->addr_in = nullptr;
-        }
     }
 
     size_t SocketAddressV6::getAddrInSize() { 
@@ -366,7 +350,7 @@ namespace AntonaStandard::MultiPlatformSupport{
 
     void SocketAddressV6::setAddr(const char* ip, unsigned short port) {
         // 首先转化addr_in，方便操作
-        sockaddr_in6* this_addr_in = (sockaddr_in6*)this->addr_in;
+        sockaddr_in6* this_addr_in = (sockaddr_in6*)this->addr_in.get();
         // 设置协议
         this_addr_in->sin6_family = SocketProtocol::ipv6;
         // 设置ip
@@ -378,7 +362,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     std::string SocketAddressV6::getIp() { 
         char temp_ip[50];
         auto ret = inet_ntop(SocketProtocol::ipv6,
-            &(((sockaddr_in6*)this->addr_in)->sin6_addr),
+            &(((sockaddr_in6*)this->addr_in.get())->sin6_addr),
             temp_ip,sizeof(temp_ip));
         if(ret == nullptr){
             #ifdef AntonaStandard_PLATFORM_WINDOWS
@@ -395,7 +379,7 @@ namespace AntonaStandard::MultiPlatformSupport{
 
     unsigned short SocketAddressV6::getPort() { 
         // 首先转化addr_in 方便操作
-        sockaddr_in6* this_addr_in = (sockaddr_in6*)this->addr_in;
+        sockaddr_in6* this_addr_in = (sockaddr_in6*)this->addr_in.get();
         return ntohs(this_addr_in->sin6_port);
     }
 
@@ -403,8 +387,8 @@ namespace AntonaStandard::MultiPlatformSupport{
         return SocketProtocol::ipv6;
     }
 
-    SocketAddressV6* SocketAddressV6::copy() { 
-        return new SocketAddressV6(*this); 
+    std::shared_ptr<SocketAddress> SocketAddressV6::copy() { 
+        return std::make_shared<SocketAddressV6>(*this); 
     }
 
     }  // namespace AntonaStandard::MultiPlatformSupport

@@ -118,6 +118,8 @@
 
 2023/9/15 AntonaStandard-v-9.1.0 I redesigned the class to package IP address and Port better. Now this project provides an easy and usable cross platform **TCP/IPV4** and **TCP/IPV6** Socket communication solution.
 
+2023/10/24 AntonaStandard-v-9.2.0 Transient version
+
 #### Author's Blog
 
 

@@ -2,11 +2,11 @@
 namespace AntonaStandard::Math{
         /*			"+",加法重载部分					*/
     // 友元函数是可以通过成员访问运算符访问私有成员的
-    Fraction operator+(const Fraction& f1, const Fraction& f2) {
+    const Fraction operator+(const Fraction& lhs, const Fraction& rhs) {
         //	如果声明中加了const，定义中没有加const，可能会出现无权访问私有成员的报错
         // 加法友元重载函数定义
-        int retnum = f1.getNumerator() * f2.getDenominator() + f2.getNumerator() * f1.getDenominator();
-        int retden = f1.getDenominator() * f2.getDenominator();
+        int retnum = lhs.getNumerator() * rhs.getDenominator() + rhs.getNumerator() * lhs.getDenominator();
+        int retden = lhs.getDenominator() * rhs.getDenominator();
         int ratio = Fraction::Euclid(retnum, retden);
         if(retden < 0&&retnum>=0){
             ratio *= -1;
@@ -15,10 +15,10 @@ namespace AntonaStandard::Math{
     }
 
     /*			"-",减法重载部分					*/
-    Fraction operator-(const Fraction& f1, const Fraction& f2) {
+    const Fraction operator-(const Fraction& lhs, const Fraction& rhs) {
         // 减法友元重载函数定义
-        int retnum = f1.getNumerator() * f2.getDenominator() - f2.getNumerator() * f1.getDenominator();
-        int retden = f1.getDenominator() * f2.getDenominator();
+        int retnum = lhs.getNumerator() * rhs.getDenominator() - rhs.getNumerator() * lhs.getDenominator();
+        int retden = lhs.getDenominator() * rhs.getDenominator();
         int ratio = Fraction::Euclid(retnum, retden);
         if(retden < 0&&retnum>=0){
             ratio *= -1;
@@ -27,10 +27,10 @@ namespace AntonaStandard::Math{
     }
 
     /*			"*",乘法重载部分					*/
-    Fraction operator*(const Fraction& f1, const Fraction& f2) {
+    const Fraction operator*(const Fraction& lhs, const Fraction& rhs) {
         // 加法友元重载函数定义
-        int retnum = f1.getNumerator() * f2.getNumerator();
-        int retden = f1.getDenominator() * f2.getDenominator();
+        int retnum = lhs.getNumerator() * rhs.getNumerator();
+        int retden = lhs.getDenominator() * rhs.getDenominator();
         int ratio = Fraction::Euclid(retnum, retden);
         if(retden < 0&&retnum>=0){
             ratio *= -1;
@@ -39,10 +39,10 @@ namespace AntonaStandard::Math{
     }
 
     /*          '/'乘法重载                 */
-    Fraction operator/(const Fraction& f1, const Fraction& f2) {
+    const Fraction operator/(const Fraction& lhs, const Fraction& rhs) {
         // 减法友元重载函数定义
-        int retnum = f1.getNumerator() * f2.getDenominator();
-        int retden = f1.getDenominator() * f2.getNumerator();
+        int retnum = lhs.getNumerator() * rhs.getDenominator();
+        int retden = lhs.getDenominator() * rhs.getNumerator();
         int ratio = Fraction::Euclid(retnum, retden);
         if(retden < 0&&retnum>=0){
             ratio *= -1;
@@ -104,26 +104,19 @@ namespace AntonaStandard::Math{
         return *this;
 
     }
-    Fraction& Fraction::operator=(const Fraction& f){
-        this->numerator = f.getNumerator();
-        this->denominator = f.getDenominator();
+    Fraction& Fraction::operator=(const Fraction& rhs){
+        this->numerator = rhs.getNumerator();
+        this->denominator = rhs.getDenominator();
         return *this;
     }
     
-    Fraction& Fraction::operator=(const Fraction&& f){
-        this->numerator = f.getNumerator();
-        this->denominator = f.getDenominator();
-        return *this;
-    }
-
-
-    bool operator==(const Fraction& f1, const Fraction& f2){
-        int f1_num = f1.getNumerator();
-        int f1_den = f1.getDenominator();
-        int f2_num = f2.getNumerator();
-        int f2_den = f2.getDenominator();
-        int res_num = f1_num*f2_den;
-        int res_den = f1_den*f2_num;
+    bool operator==(const Fraction& lhs, const Fraction& rhs){
+        int lhs_num = lhs.getNumerator();
+        int lhs_den = lhs.getDenominator();
+        int rhs_num = rhs.getNumerator();
+        int rhs_den = rhs.getDenominator();
+        int res_num = lhs_num*rhs_den;
+        int res_den = lhs_den*rhs_num;
         bool result = false;
         if(res_num == res_den){
             result = true;
@@ -132,13 +125,13 @@ namespace AntonaStandard::Math{
     }
 
 
-    bool operator!=(const Fraction& f1, const Fraction& f2){
-        int f1_num = f1.getNumerator();
-        int f1_den = f1.getDenominator();
-        int f2_num = f2.getNumerator();
-        int f2_den = f2.getDenominator();
-        int res_num = f1_num*f2_den;
-        int res_den = f1_den*f2_num;
+    bool operator!=(const Fraction& lhs, const Fraction& rhs){
+        int lhs_num = lhs.getNumerator();
+        int lhs_den = lhs.getDenominator();
+        int rhs_num = rhs.getNumerator();
+        int rhs_den = rhs.getDenominator();
+        int res_num = lhs_num*rhs_den;
+        int res_den = lhs_den*rhs_num;
         bool result = false;
         if(res_num != res_den){
             result = true;
@@ -146,13 +139,13 @@ namespace AntonaStandard::Math{
         return result;
     }
 
-    bool operator>(const Fraction& f1, const Fraction& f2){
-        int f1_num = f1.getNumerator();
-        int f1_den = f1.getDenominator();
-        int f2_num = f2.getNumerator();
-        int f2_den = f2.getDenominator();
-        int res_num = f1_num*f2_den;
-        int res_den = f1_den*f2_num;
+    bool operator>(const Fraction& lhs, const Fraction& rhs){
+        int lhs_num = lhs.getNumerator();
+        int lhs_den = lhs.getDenominator();
+        int rhs_num = rhs.getNumerator();
+        int rhs_den = rhs.getDenominator();
+        int res_num = lhs_num*rhs_den;
+        int res_den = lhs_den*rhs_num;
         bool result = false;
         if(res_num > res_den){
             result = true;
@@ -160,13 +153,13 @@ namespace AntonaStandard::Math{
         return result;
     }
 
-    bool operator>=(const Fraction& f1, const Fraction& f2){
-        int f1_num = f1.getNumerator();
-        int f1_den = f1.getDenominator();
-        int f2_num = f2.getNumerator();
-        int f2_den = f2.getDenominator();
-        int res_num = f1_num*f2_den;
-        int res_den = f1_den*f2_num;
+    bool operator>=(const Fraction& lhs, const Fraction& rhs){
+        int lhs_num = lhs.getNumerator();
+        int lhs_den = lhs.getDenominator();
+        int rhs_num = rhs.getNumerator();
+        int rhs_den = rhs.getDenominator();
+        int res_num = lhs_num*rhs_den;
+        int res_den = lhs_den*rhs_num;
         bool result = false;
         if(res_num >= res_den){
             result = true;
@@ -174,13 +167,13 @@ namespace AntonaStandard::Math{
         return result;
     }
 
-    bool operator<(const Fraction& f1, const Fraction& f2){
-        int f1_num = f1.getNumerator();
-        int f1_den = f1.getDenominator();
-        int f2_num = f2.getNumerator();
-        int f2_den = f2.getDenominator();
-        int res_num = f1_num*f2_den;
-        int res_den = f1_den*f2_num;
+    bool operator<(const Fraction& lhs, const Fraction& rhs){
+        int lhs_num = lhs.getNumerator();
+        int lhs_den = lhs.getDenominator();
+        int rhs_num = rhs.getNumerator();
+        int rhs_den = rhs.getDenominator();
+        int res_num = lhs_num*rhs_den;
+        int res_den = lhs_den*rhs_num;
         bool result = false;
         if(res_num < res_den){
             result = true;
@@ -188,13 +181,13 @@ namespace AntonaStandard::Math{
         return result;
     }
 
-    bool operator<=(const Fraction& f1, const Fraction& f2){
-        int f1_num = f1.getNumerator();
-        int f1_den = f1.getDenominator();
-        int f2_num = f2.getNumerator();
-        int f2_den = f2.getDenominator();
-        int res_num = f1_num*f2_den;
-        int res_den = f1_den*f2_num;
+    bool operator<=(const Fraction& lhs, const Fraction& rhs){
+        int lhs_num = lhs.getNumerator();
+        int lhs_den = lhs.getDenominator();
+        int rhs_num = rhs.getNumerator();
+        int rhs_den = rhs.getDenominator();
+        int res_num = lhs_num*rhs_den;
+        int res_den = lhs_den*rhs_num;
         bool result = false;
         if(res_num <= res_den){
             result = true;
@@ -210,9 +203,6 @@ namespace AntonaStandard::Math{
             if(split_c == '/'){
                 input>>split_c;
                 input>>f.denominator;
-                if(f.denominator == 0){
-                    throw AntonaStandard::Utilities::WrongArgument_Error("Got 0 in the denominator of AntonaStandard::Math::Fraction object!");
-                }
                 if(f.denominator<0){
                     f.denominator*=-1;
                     f.numerator*=-1;
