@@ -18,12 +18,12 @@
 
 #if AntonaStandard_PLATFORM_WINDOWS 
     #include <Windows.h>
-    #define ASD_EXPORT_FUNC __declspec(dllexport)
+    #define ASD_EXPORT __declspec(dllexport)
 
 #elif AntonaStandard_PLATFORM_LINUX
     #include <dlfcn.h>
     // 在编译器选项中没有指定隐藏函数的前提下，源文件下的所有函数都是默认导出的，为了防止函数默认隐藏这里设置一函数的可见性
-    #define ASD_EXPORT_FUNC __attribute__((visibility("default")))
+    #define ASD_EXPORT __attribute__((visibility("default")))
 #endif
 
 // 动态库加载与卸载函数

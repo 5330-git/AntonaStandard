@@ -1,50 +1,52 @@
 #include <iostream>
 #include "Utilities/Delegate.h"
+#include "MultiplatformSupport/MultiPlatformMacro.h"
 using namespace std;
 using namespace AntonaStandard::Utilities;
 
 class A{
 public:
     static int s_i_v_A(){
-        cout<<"int返回值无参数A的静态函数"<<endl;
+        cout<<"non-member static function of class A: \'int(*)()\' "<<endl;
         return 10;
     }
     int i_v_A(){
-        cout<<"int返回值无参数A的非静态函数"<<endl;
+        cout<<"member function of class A: \'int (*)()\' "<<endl;
         return 11;
     }
 
 };
 int i_v(){
-    cout<<"int返回值无参数普通函数"<<endl;
+    cout<<"non-member function : \'int(*)()\' "<<endl;
     return 12;
 }
 class B{
 public:
     static void s_v_v_B(){
-        cout<<"无返回值无参数B的静态函数"<<endl;
+        cout<<"non-member static function of class B: \'void(*)()\' "<<endl;
     }
+    
     void v_v_B(){
-        cout<<"无返回值无参数B的非静态函数"<<endl;
+        cout<<"member function of class B: \'void(*)()\' "<<endl;
     }
 };
 void v_v(){
-    cout<<"无返回值无参数的普通函数"<<endl;
+    cout<<"non-member function : \'void(*)()\' "<<endl;
 }
 
 class C{
 public:
     static int& s_iq_iq_C(int& v){
-        cout<<"无返回值无参数C的静态函数 "<<v<<endl;
+        cout<<"non-member static function of class C: \'int&(*)(int&)\' "<<v<<endl;
         return v;
     }
     int& iq_iq_C(int& v){
-        cout<<"无返回值无参数C的非静态函数 "<<v<<endl;
+        cout<<"member function of class C: \'int&(*)(int&)\' "<<v<<endl;
         return v;
     }
 };
 int& iq_iq(int& v){
-    cout<<"无返回值无参数的普通函数 "<<v<<endl;
+    cout<<"non-member function of class C: \'int&(*)(int&)\' "<<v<<endl;
     return v;
 }
 
@@ -86,5 +88,8 @@ int main(){
         cout<<vec2[i]<<" ";
     }
     cout<<endl;
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
     return 0;
 }

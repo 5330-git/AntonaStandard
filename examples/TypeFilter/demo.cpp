@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Utilities/TypeFilter.h" 
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 using namespace AntonaStandard::Utilities;
 
@@ -112,9 +113,17 @@ int main(){
         filter1->dispose(nullptr,i);
         delete i;
     }
-    filter1->install(nullptr);          // 安装空指针会报错
-    delete filter1;
-
+    try{
+        filter1->install(nullptr);          // 安装空指针会报错
+        delete filter1;
+    }
+    catch(AntonaStandard::Utilities::NullPointer_Error& e){
+        cout<<e.what()<<endl;
+    }
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
+    return 0;
 }
 /*
 Child1 say hello: Child1_work !

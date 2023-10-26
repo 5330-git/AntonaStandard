@@ -2,110 +2,171 @@
 
 #include <iostream>
 namespace AntonaStandard::ThreadTools {
-    void ThreadsPool::work() {
-        while(true){
-            // 等待超过20秒自动销毁
-            std::unique_lock<std::mutex> lck_pool(this->protect_pool_mtx);
-            // 加判断，防止强制结束和队列不空的唤醒丢失。其中强制结束的唤醒非常重要，否则会造成死锁
-            while(!this->stop && this->tasks.empty()){
-                this->task_queue_cv.wait_for(lck_pool,std::chrono::seconds(this->max_seconds));
-                if(!this->stop && this->tasks.empty()){          // 仍然不满足唤醒条件，说明是超时唤醒
-                    // 等待dead_threads的使用权
-                    dead_threads.insert(std::pair<std::thread::id,std::thread*>(std::this_thread::get_id(),this->threads[std::this_thread::get_id()]));
-                    // this->threads[std::this_thread::get_id()] = nullptr;
-                    this->threads.erase(std::this_thread::get_id());
-                    // 容器中的指针的擦除工作由管理者线程来执行
-                    return ;            // 到时仍未等到任务或者线程池要求终止时，自动结束
-                }
-            }
-            
-            
-            if(this->stop && this->tasks.empty()){
-                                    // 必须队列为空了才能彻底停止
-                return;
-            }
-            // 取任务
-            auto task = this->tasks.front();
-            this->tasks.pop();
-            // 执行任务
-            task();
-        }
-    }
-
-    void ThreadsPool::stratagy() {
-        // 管理者管理策略
-        while(true){
-            
+    void ThreadsPool::work(){
+        std::function<void(void)> work_task;
+        while(!this->is_shutdown.load(std::memory_order_relaxed)){
             {
-                // 锁定线程池
-                std::unique_lock<std::mutex> lck_pool(this->protect_pool_mtx);
-                int cur_threads_counts = this->threads.size();
-                int cur_tasks_counts = this->tasks.size();
-                int added_threads = 0;
-                // 维持核心线程数
-                if(!this->stop && cur_tasks_counts < this->coreCount){
-                    // 小于核心线程数,则添加合适的个数个线程
-                    for(int i = 0;i<this->coreCount-cur_tasks_counts;++i){
-                        std::thread* th_ptr = new std::thread(&ThreadsPool::work,this);
-                        threads.insert(std::pair<std::thread::id,std::thread*>(th_ptr->get_id(),th_ptr));
-                        ++added_threads;
+                std::unique_lock<std::mutex> lck(this->mtx_thr_pool);
+                while(this->tasks.empty() && !this->is_shutdown.load(std::memory_order_relaxed)){
+                    // 生成快照
+                    int live_thread_num_snapshot = this->live_thread_num.load(std::memory_order_relaxed);
+                    int busy_thread_num_snapshot = this->busy_thread_num.load(std::memory_order_relaxed);
+                    int tasks_num_snapshot = this->tasks.size();
+                    // 判断是等待还是退出
+                    if(this->is_neeed_exit(live_thread_num_snapshot, busy_thread_num_snapshot, tasks_num_snapshot)){
+                        this->live_thread_num.fetch_sub(1, std::memory_order_release);
+                        return;
                     }
-                    
-                }
-                // 平衡任务数量和线程数量
-                if(!this->stop && cur_tasks_counts> (cur_tasks_counts+added_threads)*2){
-                    // 添加一个线程
-                    std::thread* th_ptr = new std::thread(&ThreadsPool::work,this);
-                    threads.insert(std::pair<std::thread::id,std::thread*>(th_ptr->get_id(),th_ptr));
-                }
-                // 清除死亡线程
-                for(auto& t:this->dead_threads){
-                    // 从threads中擦除                    
-                    t.second->detach();         // 分离线程
-                    delete t.second;
-                    t.second = nullptr;
-                    
-                }
-                this->dead_threads.clear();
-                if(this->stop && this->tasks.empty()){
-                    return;
+                    else{
+                        this->cv_thr_pool.wait(lck);
+                    }
+
                 }
             }
+            if(this->tasks.pop(work_task)){
+                // 取到任务
+                this->busy_thread_num.fetch_add(1,std::memory_order_release);
+                work_task();
+                this->busy_thread_num.fetch_sub(1,std::memory_order_release);
+            }
+        }
+    }
+    void ThreadsPool::manage(){
+        // 管理线程
+        // 休眠等待
+        while(!this->is_shutdown.load(std::memory_order_relaxed)){
+            std::this_thread::sleep_for(this->get_manager_waiting_period());
+            // 生成快照，要求总是读取到最新的数据（读取需要排在在写入之后）
+            int live_thread_num_snap = this->live_thread_num.load(std::memory_order_relaxed);
+            int busy_thread_num_snap = this->busy_thread_num.load(std::memory_order_relaxed);
+            int task_num_snap = this->tasks.size();
+
+            // 计算需要增加的线程数
+            int add_thread_num = this->get_add_thread_num(
+                                    live_thread_num_snap,
+                                    busy_thread_num_snap,
+                                    task_num_snap);
+            // 遍历线程池中的线程
+            if(add_thread_num > 0){
+                for(int i = 0; add_thread_num > 0 && i < this->thr_pool.size(); i++){
+                    // 检查线程的存活情况
+                    if(this->thr_pool[i].get_id() == std::thread::id()){
+                        // 线程死亡，重新创建
+                        this->thr_pool[i] = std::move(std::thread(&ThreadsPool::work,this));
+                        --add_thread_num;
+                        this->live_thread_num.fetch_add(1,std::memory_order_release);
+                    }
+                }
+            }
+            // 重新采集快照,要求总是读取到最新的数据（读取需要排在在写入之后）
+            live_thread_num_snap = this->live_thread_num.load(std::memory_order_relaxed);
+            busy_thread_num_snap = this->busy_thread_num.load(std::memory_order_relaxed);
+            task_num_snap = this->tasks.size();
+
             
-            
-            
-            // 首先休眠5秒
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            // 计算是否需要唤醒所有线程处理任务，或者需要唤醒多余的线程自行缩减
+            bool if_motivate = this->is_need_motivate(
+                                    live_thread_num_snap,
+                                    busy_thread_num_snap,
+                                    task_num_snap);
+                                    
+            if(if_motivate){
+                this->cv_thr_pool.notify_all();
+            }
         }
     }
 
-    ThreadsPool::ThreadsPool(int coreC):stop(false),coreCount(coreC){
-        // 核心线程数默认为0
-        for(int i = 0;i<coreCount;++i){
-            std::thread* th_ptr = new std::thread(&ThreadsPool::work,this);
-            threads.insert(std::pair<std::thread::id,std::thread*>(th_ptr->get_id(),th_ptr));
-        }
-        // 创建管理者
-        this->manager_ptr = new std::thread(&ThreadsPool::stratagy,this);
-    }  
+    std::chrono::milliseconds ThreadsPool::get_manager_waiting_period(){
+        return std::chrono::milliseconds(5000);
+    }
 
-    ThreadsPool::~ThreadsPool() {
-        {
-            std::unique_lock<std::mutex> lck_pool(this->protect_pool_mtx);
-            this->stop = true;  // 修改标记，终止所有线程
+    int ThreadsPool::get_add_thread_num( int live_thread_num_snapshot, 
+                                    int busy_thread_num_snapshot,
+                                    int tasks_num_snap){
+        // 实现计算需要增加的线程数的算法
+        int result = 0;
+        if(live_thread_num_snapshot < this->min_thread_num){
+            // 小于最少线程数
+            result += this->min_thread_num - live_thread_num_snapshot;
         }
-        this->task_queue_cv.notify_all();
-        // 等待管理者线程结束，管理者线程结束时所有工作线程都处于循环开始的地方，此时stop条件已经为真，因此不会再有线程因为超时而退出
-        this->manager_ptr->join();
-        delete this->manager_ptr;
-        // 不会再有线程进行超时终结，即threads和deadthreads不会再被修改
-        // 遍历活着的线程
-        for (auto& t : this->threads) {
-            if (t.second) {
-                // 判断的过程是防止，t对应的线程在遍历过程中被清除
-                t.second->join();
-                delete t.second;
+        // 繁忙线程数较多，并且任务总数较多
+        if(busy_thread_num_snapshot * 2 > live_thread_num_snapshot&& 
+            tasks_num_snap > this->max_thread_num*2 &&
+            live_thread_num_snapshot + 2 < this->max_thread_num){
+            result += 2;
+        }
+        
+        return result;
+    }
+    bool ThreadsPool::is_need_motivate(  int live_thread_num_snapshot, 
+                                    int busy_thread_num_snapshot,
+                                    int tasks_num_snapshot){
+        // 任务量激增，或者需要裁剪多余的线程，需要通过该函数的算法进行判断
+        if(tasks_num_snapshot == 0){
+            
+            if(this->is_shutdown.load(std::memory_order_relaxed)){
+                return true;
+            }
+            if(live_thread_num_snapshot > this->min_thread_num){
+                // 存活线程大于核心线程，需要唤醒进行裁剪
+                return true;
+            }
+            // 没有任务且线程池未关闭不需要唤醒
+            return false;
+        }
+        if(busy_thread_num_snapshot  < live_thread_num_snapshot &&
+            tasks_num_snapshot > busy_thread_num_snapshot*1.5){
+            // 存在部分工作线程没有工作，并且任务数量较多
+            return true;
+        }
+        return false;
+    }
+    bool ThreadsPool::is_neeed_exit( int live_thread_num_snapshot,
+                                int busy_thread_num_snapshot,
+                                int tasks_num_snapshot){
+        // 判断工作线程是否应该退出
+        if(live_thread_num_snapshot <= min_thread_num){
+            // 小于等于最小线程数，不应该退出
+            return false;
+        }
+        if(busy_thread_num_snapshot * 2 > live_thread_num_snapshot){
+            // 工作的线程占总线程数的半以上，可用的线程数偏小不应该退出
+            return false;
+        }
+        if(tasks_num_snapshot*2 > live_thread_num){
+            // 待取任务较多
+            return false;
+        }
+        return true;
+    }
+    ThreadsPool:: ~ThreadsPool(){
+        if(!this->is_shutdown){
+            this->shutdown();
+        }
+        // 任务队列随后会销毁，同时内部的future对象会被销毁，结果获取处会接收到 std::future_error
+    }
+    void ThreadsPool::lauch(){
+        // 启动线程池（创建最小线程数个线程）
+        for(int i = 0; i < this->min_thread_num; ++i){
+            this->thr_pool[i] = std::thread(&ThreadsPool::work, this);
+        }
+        // 启动manager
+        this->manager_thread = std::thread(&ThreadsPool::manage, this);
+    }
+    void ThreadsPool::shutdown(){
+        // 关闭线程池
+        this->is_shutdown.store(true,std::memory_order_release);       // 优先修改
+        // 关闭管理者线程（防止它创建新线程）
+        if(this->manager_thread.joinable()){
+            this->manager_thread.join();
+        }
+        
+        // 关闭剩余线程
+        for(auto& thr:this->thr_pool){
+            if(thr.joinable()){
+                thr.join();
             }
         }
+        
     }
 }

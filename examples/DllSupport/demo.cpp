@@ -1,5 +1,6 @@
 #include <iostream>
 #include "MultiPlatformSupport/DllSupport.h"
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 #include <string>
 using namespace std;
 using namespace AntonaStandard::MultiPlatformSupport;
@@ -31,7 +32,10 @@ int main(){
 
     // 卸载动态库句柄
     unloadDll(handle);
-
+    cout<<"successfully unload dll"<<endl;
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
     return 0;
 
 }

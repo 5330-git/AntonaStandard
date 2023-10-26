@@ -1,9 +1,11 @@
 #include <iostream>
 #include "Math/Fraction.h"   // 分数库
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 using namespace AntonaStandard::Math;
 int main(){
-    cout<<"分数库演示(Demo of Library Fraction):"<<endl;
+    
+    cout<<"Demo of Library Fraction:"<<endl;
     // 无参构造
     Fraction f;						// f == "0/1"
     // 单int构造
@@ -38,5 +40,8 @@ int main(){
     Fraction f8;
     cin>>f8;								// 会尝试按照"num/den"的形式读取，如果不存在字符'/'则会终止读取den，并将den赋值为1
     cout<<f8<<endl;
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
     return 0;
 }

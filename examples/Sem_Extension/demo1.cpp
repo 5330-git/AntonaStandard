@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 #include "ThreadTools/Sem_Extension.h"
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 
 
@@ -19,7 +20,7 @@ void work(int code){
         ac.and_acquire(*chopsticks[code],*chopsticks[(code+1)%5]);
         usable.acquire();
         
-        cout<<"哲学家 "<<code<<" 就餐第"<<j<<" 次"<<endl;
+        cout<<"Philosopher "<<code<<" took snacks "<<j<<" times"<<endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));     // 休眠100毫秒，更容易体现哲学家之间的竞争
         // 释放输出控制台(释放的顺序无所谓)
         usable.release();
@@ -27,7 +28,6 @@ void work(int code){
     }    
 }
 int main(){
-    system("chcp 65001");
     for(int i = 0;i<5;++i){
         // 创建表示筷子的信号量
         chopsticks.push_back(new binary_semaphore(1));
@@ -46,5 +46,8 @@ int main(){
         delete i;
     }
     cout<<"finished!"<<endl;
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
     return 0;
 }

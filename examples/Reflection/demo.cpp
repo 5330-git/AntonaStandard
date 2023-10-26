@@ -1,18 +1,19 @@
 #include <iostream>
 #include "Utilities/Reflection.h" 
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 using namespace AntonaStandard::Utilities;
 
 class A{
 public:
     A(){
-        cout<<"A构造了"<<endl;
+        cout<<"Construct A!"<<endl;
     };
 };
 class B{
 public:
     B(){
-        cout<<"B构造了"<<endl;
+        cout<<"Construct B"<<endl;
     };
 };
 
@@ -31,11 +32,14 @@ int main(){
     Factory fac;							// 实例化派生的反射类（其实是一种广义的简单工厂）
     A* a  = (A*)fac.createInstance("A");	// 创建A的实例，注意需要对返回值类型进行强制转换
     B* b = (B*)fac.createInstance("B");
-    fac.createInstance("C");				// 由于类C未被注册，因此会抛出异常
-/* 输出
-A构造了
-B构造了
-terminate called after throwing an instance of 'AntonaStandard::NotFound_Error'
-  what():  The type you create was not registered!: C
-*/
+    try{
+        fac.createInstance("C");				// 由于类C未被注册，因此会抛出异常
+    }
+    catch(AntonaStandard::Utilities::NotFound_Error& e){
+        cout<<e.what()<<endl;
+    }
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
+    return 0;
 }

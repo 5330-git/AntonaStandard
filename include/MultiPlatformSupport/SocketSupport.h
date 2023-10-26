@@ -104,6 +104,9 @@ namespace AntonaStandard::MultiPlatformSupport{
         // 使用string作为底层的缓冲容器
     private:
         std::string buffer;
+        inline void movePutPos(size_t size){
+            this->pbump(size);
+        }
     protected:
         // 没有可以放置元素的位置
         std::streambuf::int_type virtual overflow(std::streambuf::int_type c)override;
@@ -112,25 +115,48 @@ namespace AntonaStandard::MultiPlatformSupport{
 
         // 处理放回字符的问题
         std::streambuf::int_type virtual pbackfail(std::streambuf::int_type c)override;
-        // 遇到std::flush 和 std::endl时回刷新
-        int virtual sync()override;
+        // // 遇到std::flush 和 std::endl时回刷新
+        // int virtual sync()override;  // 不需要刷新，应当允许endl进行换行
     public:
+        friend class SocketCommunication;
         SocketDataBuffer();
-        inline size_t sendable()const{
-            // 获取可发送的数据长度
-            return this->pptr()-this->pbase()+1;
-        }
-        inline char* getBeginPos()const{
+        inline char* receivingPos()const{
             // 获取发送的数据的起始位点
+            return this->pptr();
+        }
+        inline char* sendingPos()const{
             return this->pbase();
         }
-        inline const std::string& str(){
+        
+        inline size_t getReceivableSize()const{
+            return this->epptr()-this->pptr();
+        }
+        inline size_t getSendableSize()const{
+            return this->pptr()-this->pbase();
+        }
+        
+        inline const std::string& str()const{
             return this->buffer;
         }
         inline void resize(size_t size){
-            this->buffer.resize(size);
+            
+            auto pptr_pos = std::min(size_t(this->pptr()-this->pbase()),size);
+            ++size;             // epptr() 的位置是不可放和不可读的 
+            auto gptr_pos = std::min(size_t(this->gptr()-this->eback()),pptr_pos);      // 防止溢出
+
+            this->buffer.resize(std::max(size_t(1),size));          // 要为epptr留出位置
             this->setp(&(this->buffer.front()),&(this->buffer.back()));
-            this->setg(this->pbase(),this->pbase(),this->pptr());
+            this->pbump(pptr_pos);
+            this->setg(this->pbase(),this->pbase()+gptr_pos,this->pptr());
+        }
+        inline void clear(){
+            // 对于放置区来说，需要重置放置位置
+            // 将输入缓冲区的三个指针和输出缓冲区的三个指针重定向
+                // 写入缓冲区的指针pbase,pptr,epptr
+            this->setp(&(buffer.front()),&(buffer.back()));
+                // 输出，读取缓冲区的指针eback,gptr,egptr
+                    // 即将可读的内容清空
+            this->setg(&(buffer.front()),&(buffer.front()),this->pptr());
         }
     };
 

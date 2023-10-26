@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "Utilities/Antona_foreach.h"
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 using namespace AntonaStandard::Utilities;
 int main() {
@@ -23,6 +24,9 @@ int main() {
         cout<<i<<" ";
     }
     cout<<endl;
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
 	return 0;   
 }
 /*

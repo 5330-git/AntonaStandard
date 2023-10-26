@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 #include "ThreadTools/Sem_Extension.h"
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 
 AntonaStandard::ThreadTools::Sem_Set_Acquirer sem_ac;
@@ -61,5 +62,8 @@ int main(){
         i.join();
     }
     cout<<"finished!"<<endl;
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
     return 0;
 }

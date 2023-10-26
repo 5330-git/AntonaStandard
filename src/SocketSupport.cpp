@@ -160,13 +160,13 @@ namespace AntonaStandard::MultiPlatformSupport{
     void SocketCommunication::send(Socket& socket,SocketDataBuffer& data) {
         // Windows下需要检查长度是否超过INTMAX
         #ifdef AntonaStandard_PLATFORM_WINDOWS
-            if (data.sendable() > INT_MAX) {
+            if (data.getSendableSize() > INT_MAX) {
                 std::stringstream ss;
-                ss<<"send data size is too large, size = "<<data.sendable();
+                ss<<"send data size is too large, size = "<<data.getSendableSize();
                 throw std::runtime_error(ss.str());
             }
         #endif
-        int size_send = ::send(socket.getSocketId(), data.getBeginPos(), data.sendable(), 0);
+        int size_send = ::send(socket.getSocketId(), data.sendingPos(), data.getSendableSize(), 0);
         if (size_send == -1) {
             // error = -1，返回错误
             #ifdef AntonaStandard_PLATFORM_WINDOWS
@@ -181,7 +181,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     }
 
     size_t SocketCommunication::receive(Socket& socket,SocketDataBuffer& data) {
-        size_t size_accepted = recv(socket.getSocketId(), data.getBeginPos(), data.str().size(), 0);
+        size_t size_accepted = recv(socket.getSocketId(), data.receivingPos(), data.getReceivableSize(), 0);
         if (size_accepted < 0) {
             #ifdef AntonaStandard_PLATFORM_WINDOWS
                 int error = WSAGetLastError();
@@ -192,7 +192,7 @@ namespace AntonaStandard::MultiPlatformSupport{
             ss<<"receive error, error = "<<error;
             throw std::runtime_error(ss.str());
         }
-        data.resize(size_accepted);
+        data.movePutPos(size_accepted);
         return size_accepted;
     }
 
@@ -200,11 +200,14 @@ namespace AntonaStandard::MultiPlatformSupport{
         std::streambuf::int_type c) {
         size_t read_pos = this->gptr()-this->eback();
         // 将buffer扩大到原来的二倍
-        size_t pre_size = this->buffer.size();
-        this->buffer.resize(this->buffer.size()*2);
+        size_t put_pos = this->pptr()-this->pbase();
+        size_t new_size = std::max(size_t(16),this->buffer.size()-1)*2+1;
+        this->buffer.resize(new_size);
         // 将输入缓冲区的三个指针和输出缓冲区的三个指针重定向
             // 写入缓冲区的指针pbase,pptr,epptr
-        this->setp(&(buffer[pre_size-1]),&(buffer.back()));
+        this->setp(&(buffer.front()),&(buffer.back()));
+        this->pbump(put_pos);
+        
             // 输出，读取缓冲区的指针eback,gptr,egptr
         this->setg(&(buffer.front()),&(buffer[read_pos]),this->pptr());
 
@@ -236,17 +239,7 @@ namespace AntonaStandard::MultiPlatformSupport{
         return c;
     }
 
-    int SocketDataBuffer::sync() {
-        // 对于放置区来说，需要重置放置位置
-        // 将输入缓冲区的三个指针和输出缓冲区的三个指针重定向
-            // 写入缓冲区的指针pbase,pptr,epptr
-        this->setp(&(buffer.front()),&(buffer.back()));
-            // 输出，读取缓冲区的指针eback,gptr,egptr
-                // 即将可读的内容清空
-        this->setg(&(buffer.front()),&(buffer.front()),this->pptr());
-        // 刷新成功，返回0
-        return 0;
-    }
+    
 
     SocketDataBuffer::SocketDataBuffer() {
 		this->resize(128);

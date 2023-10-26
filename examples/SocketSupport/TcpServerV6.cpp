@@ -1,14 +1,13 @@
 #include "MultiPlatformSupport/SocketSupport.h"
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 #include <iostream>
+#include <random>
 using namespace std;
 using namespace AntonaStandard::MultiPlatformSupport;
 
 int main(){
 	Socket server_socket = SocketCommunication::get().createSocket(SocketProtocol::ipv6,
 	SocketType::Stream,11111,"0:0:0:0:0:0:0:1");							// 创建套接字
-	// char ip[32];
-	// inet_ntop(AF_INET,&addr_in.sin_addr,ip,32);						// 获取IP地址
-	// cout<<ip;
 	try{
 		SocketCommunication::get().bindSocket(server_socket);				// 绑定套接字
 		// 设置监听
@@ -18,31 +17,43 @@ int main(){
 		cout<<e.what()<<endl;
 		return 0;
 	}
+	// 设置随机数，用于发给客户端
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_int_distribution<> dis(100, 1000);
 	// 绑定套接字
 	// 等待连接
+	cout<<"Waiting for Clients connection..."<<endl;
 	Socket client_socket = SocketCommunication::get().acceptSocket(server_socket);		// 等待连接
-	// 接收数据
-	cout<<"开始收集数据"<<endl;
+	cout<<"Connected with client: "<<client_socket.getAddress()->getIp()<<":"<<client_socket.getAddress()->getPort()<<endl;
+	
 	SocketDataBuffer buf;
 	iostream stream(&buf);
 	buf.resize(128);
-	system("chcp 65001");
+	string message;
 	while(true){
-
+		buf.clear();
 		size_t len = SocketCommunication::get().receive(client_socket,buf);
 
 		if(len == 0){
-			cout<<"断开连接"<<endl;
+			cout<<"Break the connection"<<endl;
 			break;
 		}
-		cout<<"来自客户端 "<<client_socket.getAddress()->getIp()<<" : ";
-        cout<<client_socket.getAddress()->getPort()<<" 的数据："<<buf.str()<<endl;
-		buf.resize(128);
-		stream<<flush;
-		stream<<"hello from server";
+		// 按行读取
+		std::getline(stream,message);
+		cout<<"From Client: "<<endl<<"  "<<message<<endl;
+		buf.clear();
+		stream<<"hello from server : "<<dis(gen)<<endl;
+		
 		SocketCommunication::get().send(client_socket,buf);
 	}
-	
+	// 手动关闭
+	SocketCommunication::get().closeSocket(server_socket);
+	SocketCommunication::get().closeSocket(client_socket);
+	#ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
+
 	return 0;
 }
 

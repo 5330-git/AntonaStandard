@@ -1,6 +1,7 @@
 #include <iostream>
 #include <queue>
 #include "Utilities/AutoNode.h"
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 using namespace AntonaStandard::Utilities;
 template<typename type_Key>
@@ -25,7 +26,7 @@ public:
         return new GreenNode(this->key);
     }
     void outPutGreenNodeMessage(){
-        cout<<" 绿叶: ";
+        cout<<" GreenNode: ";
     }
 };
 template<typename type_Key>
@@ -36,7 +37,7 @@ public:
         return new YellowNode(this->key);
     }
     void outPutYellowNodeMessage(){
-        cout<<" 黄叶: ";
+        cout<<" YellowNode: ";
     }
 };
 template<typename type_Key>
@@ -47,7 +48,7 @@ public:
         return new RedNode(this->key);
     }
     void outPutRedNodeMessage(){
-        cout<<"红叶: ";
+        cout<<"RedNode: ";
     }
 };
 template<typename type_Key>
@@ -90,6 +91,8 @@ int main(){
     delete root;
     delete r1;
     delete r2;
-    
+    #ifdef AntonaStandard_PLATFORM_WINDOWS
+        system("pause");
+    #endif
     return 0;
 }
