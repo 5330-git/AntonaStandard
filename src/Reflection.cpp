@@ -1,7 +1,7 @@
 #include "Utilities/Reflection.h"
 #include <sstream>
 namespace AntonaStandard::Utilities{
-    void* Reflection::createInstance(const char* name_str){
+    std::shared_ptr<void> Reflection::createInstance(const char* name_str){
              // 检查key即name_str是否存在
         if(this->func_map.count(name_str)==0){
             // 不存在抛出异常
@@ -12,7 +12,7 @@ namespace AntonaStandard::Utilities{
         return this->func_map[name_str]();              // 调用对应的回调函数
     }
     
-    void* Reflection::createInstance(const std::string& name_str){
+    std::shared_ptr<void> Reflection::createInstance(const std::string& name_str){
          // 检查key即name_str是否存在
         if(this->func_map.count(name_str)==0){
             // 不存在抛出异常

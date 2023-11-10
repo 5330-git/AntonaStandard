@@ -1,8 +1,9 @@
 #ifndef THREADSAFEQUEUE_H
 #define THREADSAFEQUEUE_H
 
-#include <queue>
+#include <deque>
 #include <mutex>
+#include "TestingSupport/TestingMessageMacro.h"
 #include <memory>
 
 namespace AntonaStandard{
@@ -15,8 +16,9 @@ namespace AntonaStandard{
 namespace AntonaStandard::Utilities{
     template <typename type_Ele>
     class ThreadSafeQueue{
+        TESTING_MESSAGE
     private:
-        std::queue<type_Ele> data_que;              // implement of ThreadSafeQueue 
+        std::deque<type_Ele> data_que;              // implement of ThreadSafeQueue 
         mutable std::mutex data_que_mtx;            // 用于data_que 的同步操作
     public:
         ThreadSafeQueue() = default;
@@ -32,7 +34,7 @@ namespace AntonaStandard::Utilities{
             // 上锁
             std::lock_guard<std::mutex> lck(this->data_que_mtx);
             // 存放数据
-            this->data_que.push(std::move(value));
+            this->data_que.push_back(std::move(value));
         }
 
         inline bool pop(type_Ele& target){
@@ -43,14 +45,18 @@ namespace AntonaStandard::Utilities{
             }
             // 队列不为空，移动拷贝数据
             target = std::move(this->data_que.front());
-            this->data_que.pop();
+            this->data_que.pop_front();
             return true;
         }
         inline std::shared_ptr<type_Ele> pop(){
             std::lock_guard<std::mutex> lck(this->data_que_mtx);
+            // 判断队列是否为空
+            if(this->data_que.empty()){
+                return nullptr;
+            }
             // 使用make_shared 防止拷贝构造时出现异常，从而打断数据指针被存储到shared_ptr 中，从而导致内存泄漏
             std::shared_ptr<type_Ele> temp = std::make_shared<type_Ele>(this->data_que.front());
-            this->data_que.pop();
+            this->data_que.pop_front();
             return temp;
         }
         inline size_t size()const noexcept{
@@ -60,6 +66,10 @@ namespace AntonaStandard::Utilities{
         inline bool empty()const noexcept{
             std::lock_guard<std::mutex> lck(this->data_que_mtx);
             return this->data_que.empty();
+        }
+        inline void clear()noexcept{
+            std::lock_guard<std::mutex> lck(this->data_que_mtx);
+            this->data_que.clear();
         }
     };
     

@@ -9,11 +9,11 @@
 
    **Linux(Ubuntu 22.04)**: 
 
-   - 进入`build` 目录，输入以下命令
+   - 进入`build1` 目录，输入以下命令
 
      ```bash
      rm * -rf # 首先清空build目录
-     cmake ../ # 构建生成makefile文件
+     cmake ../ # 构建生成makefile文件，可选选项(编译示例文件) -D ASD_BUILD_EXAMPLE=ON
      make # 执行make命令，开始构建库文件和示例文件
      ```
 
@@ -27,7 +27,7 @@
 
      ```powershell
      Remove-Item -Path ./* # 清空build目录
-     cmake .. -G "MinGW Makefiles" # 指定makefile的构建工具，Windows下CMake默认生成VS的构建文件
+     cmake .. -G "MinGW Makefiles" # 指定makefile的构建工具，Windows下CMake默认生成VS的构建文件。可选选项(编译示例文件) -D ASD_BUILD_EXAMPLE=ON
      mingw32-make.exe # 更据build下的Makefile文件自动构建库文件和示例文件
      ```
 
@@ -82,7 +82,41 @@
 
 
 
+#### 单元测试编译
 
+- 单元测试基于开源框架Google Test
+
+1.  切换到testing
+
+   **Linux(Ubuntu 22.04)**: 
+
+   - 进入目录 `build1` 
+
+     ```bash
+     cmake ..
+     make
+     ```
+
+   - 退出`build1` 目录，进入 `CoverageStatistic` 目录，执行脚本 `CreateFromDirBuild1.sh` 。这将自动执行所有的测试程序
+
+     ```bash
+     ./CreateFromDirBuild1.sh
+     ```
+
+   - 在当前目录下会生成测试代码覆盖率报告 `result` 
+
+   
+
+   **Windows(10)**:
+
+   - 进入目录 `build` 
+
+     ```powershell
+     cmake .. -G 'MinGW Makefiles'
+     mingw32-make
+     ```
+
+   - 测试程序生成路径为 `testing_set/bin/Windows`
 
 #### 历史版本
 2022/12/30 AntonaStandard-v-1.0.0 添加了常用异常类库Exception.h和事件委托类库Delegate.h
@@ -118,6 +152,8 @@
 2023/9/16 AntonaStandard-v-9.1.0 重新设计了封装了ip地址和端口的类，实现简单易用的跨平台的**TCP/IPV4** 以及 **TCP/IPV6** 套接字通信方案
 
 2023/10/24 AntonaStandard-v-9.2.0 过渡版本
+
+2023/11/10 AntonaStandard-v-10.0.0 引入基于Google Test 的单元测试，保障代码的健壮性。使用智能指针替代裸指针，降低内存泄漏的风险。
 
 #### 原作者博客
 

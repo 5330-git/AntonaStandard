@@ -2,7 +2,7 @@
 #define SEM_EXTENSION_H
 #include <semaphore>
 #include <mutex>
-
+#include "TestingSupport/TestingMessageMacro.h"
 #define AntonaStandard_ThreadTools_Sem_Extension_VERSION "2.1.0"
 #define AntonaStandard_ThreadTools_Sem_Extension_EDIT_TIME "2023/8/8"
 #define AntonaStandard_ThreadTools_Sem_Extension_AUTHOR "Anton"
@@ -22,6 +22,7 @@ namespace AntonaStandard{
 }
 namespace AntonaStandard::ThreadTools{
     class And_Sem_Acquirer{
+        TESTING_MESSAGE
     private:
         std::mutex and_sem_mutex;
         // 检查传入的若干信号量是否可以被同时锁定，如果可以就返回ture,否则返回false
@@ -66,6 +67,7 @@ namespace AntonaStandard::ThreadTools{
     };
 
     class Sem_Set_Acquirer{
+        TESTING_MESSAGE
     private:
         std::mutex sem_set_mutex;
         // 请求 n 个资源

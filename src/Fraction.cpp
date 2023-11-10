@@ -7,11 +7,7 @@ namespace AntonaStandard::Math{
         // 加法友元重载函数定义
         int retnum = lhs.getNumerator() * rhs.getDenominator() + rhs.getNumerator() * lhs.getDenominator();
         int retden = lhs.getDenominator() * rhs.getDenominator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        if(retden < 0&&retnum>=0){
-            ratio *= -1;
-        }
-        return 	Fraction(retnum / ratio, retden / ratio);	// 在使用的时候编译器会自动调用构造函数Fraction(const Fraction&),用来处理作用域问题（深复制了）
+        return 	Fraction(retnum , retden);	// 在使用的时候编译器会自动调用构造函数Fraction(const Fraction&),用来处理作用域问题（深复制了）
     }
 
     /*			"-",减法重载部分					*/
@@ -19,11 +15,7 @@ namespace AntonaStandard::Math{
         // 减法友元重载函数定义
         int retnum = lhs.getNumerator() * rhs.getDenominator() - rhs.getNumerator() * lhs.getDenominator();
         int retden = lhs.getDenominator() * rhs.getDenominator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        if(retden < 0&&retnum>=0){
-            ratio *= -1;
-        }
-        return 	Fraction(retnum / ratio, retden / ratio);	// 在使用的时候编译器会自动调用Fraction默认构造函数,用来处理作用域问题（深复制了）
+        return 	Fraction(retnum , retden );	// 在使用的时候编译器会自动调用Fraction默认构造函数,用来处理作用域问题（深复制了）
     }
 
     /*			"*",乘法重载部分					*/
@@ -31,11 +23,7 @@ namespace AntonaStandard::Math{
         // 加法友元重载函数定义
         int retnum = lhs.getNumerator() * rhs.getNumerator();
         int retden = lhs.getDenominator() * rhs.getDenominator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        if(retden < 0&&retnum>=0){
-            ratio *= -1;
-        }
-        return 	Fraction(retnum / ratio, retden / ratio);
+        return 	Fraction(retnum , retden);
     }
 
     /*          '/'乘法重载                 */
@@ -43,24 +31,14 @@ namespace AntonaStandard::Math{
         // 减法友元重载函数定义
         int retnum = lhs.getNumerator() * rhs.getDenominator();
         int retden = lhs.getDenominator() * rhs.getNumerator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        if(retden < 0&&retnum>=0){
-            ratio *= -1;
-        }
-        return 	Fraction(retnum / ratio, retden / ratio);
+        return 	Fraction(retnum, retden);
     }
 
     // "+="运算符作为成员函数进行重载
     Fraction& Fraction::operator+=(const Fraction& f) {
         int retnum = this->numerator * f.getDenominator() + this->denominator * f.getNumerator();
         int retden = this->denominator * f.getDenominator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        // 保证分母永远大于0
-        if(this->denominator<0&&this->numerator>=0){
-            ratio*=-1;
-        }
-        this->numerator = retnum / ratio;
-        this->denominator = retden / ratio;
+        (*this) = Fraction(retnum, retden);
         return (*this);
     }
 
@@ -69,12 +47,7 @@ namespace AntonaStandard::Math{
     Fraction& Fraction::operator-=(const Fraction& f) {
         int retnum = this->numerator * f.getDenominator() - this->denominator * f.getNumerator();
         int retden = this->denominator * f.getDenominator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        if(this->denominator<0&&this->numerator>=0){
-            ratio*=-1;
-        }
-        this->numerator = retnum / ratio;
-        this->denominator = retden / ratio;
+        (*this) = Fraction(retnum, retden);
         return (*this);
     }
 
@@ -82,25 +55,14 @@ namespace AntonaStandard::Math{
     Fraction& Fraction::operator*=(const Fraction& f) {
         int retnum = this->numerator * f.getNumerator();
         int retden = this->denominator * f.getDenominator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        if(this->denominator<0&&this->numerator>=0){
-            ratio*=-1;
-        }
-        this->numerator = retnum / ratio;
-        this->denominator = retden / ratio;
+        (*this) = Fraction(retnum, retden);
         return *this;
 
     }
     Fraction& Fraction::operator/=(const Fraction& f) {
         int retnum = this->numerator * f.getDenominator();
         int retden = this->denominator * f.getNumerator();
-        int ratio = Fraction::Euclid(retnum, retden);
-        if(this->denominator<0&&this->numerator>=0){
-            ratio*=-1;
-        }
-        this->numerator = retnum / ratio;
-        this->denominator = retden / ratio;
-        
+        (*this) = Fraction(retnum, retden);
         return *this;
 
     }
@@ -196,21 +158,20 @@ namespace AntonaStandard::Math{
     }
 
     std::istream& operator>>(std::istream& input,Fraction& f){
-        input>>f.numerator;
+        int numerator = 0;
+        int denominator = 1;
+        input>>numerator;
         char split_c = input.peek();
-        
-        if(split_c > '9'||split_c < '0'){
-            if(split_c == '/'){
-                input>>split_c;
-                input>>f.denominator;
-                if(f.denominator<0){
-                    f.denominator*=-1;
-                    f.numerator*=-1;
-                }
-                return input;
+        if(split_c == '/'){
+            input.get();
+            // 满足分数形式，继续读取
+            input>>denominator;
+            if(denominator == 0){
+                numerator = 0;
+                denominator = 1;
             }
         }
-        f.denominator = 1;
+        f = Fraction(numerator,denominator);        
         return input;
     }
     std::ostream& operator<<(std::ostream& output,const Fraction& f){

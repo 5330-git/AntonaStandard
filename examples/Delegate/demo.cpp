@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Utilities/Delegate.h"
-#include "MultiplatformSupport/MultiPlatformMacro.h"
+#include "MultiPlatformSupport/MultiPlatformMacro.h"
 using namespace std;
 using namespace AntonaStandard::Utilities;
 

@@ -167,6 +167,7 @@ namespace AntonaStandard::ThreadTools {
                 thr.join();
             }
         }
+        this->tasks.clear();
         
     }
 }

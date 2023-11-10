@@ -3,7 +3,8 @@
 
 /* Decoded by utf-8
 *   v-0.0.0 2023/9/14 初步完成套接字库的封装
-*
+*   v-0.1.0 2023/10/24 健壮性改进
+*   v-1.0.0 2023/11/4 增加UDP通信支持
 */
 #include "MultiPlatformSupport/MultiPlatformMacro.h"
 #include <string>
@@ -14,6 +15,7 @@
 #include <cstring>
 #include <memory>
 #include <algorithm>
+#include "TestingSupport/TestingMessageMacro.h"
 
 // 条件包含不同平台的套接字库
 #ifdef AntonaStandard_PLATFORM_WINDOWS
@@ -52,6 +54,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     };
 
     class SocketAddress{
+        TESTING_MESSAGE
     protected:
         std::shared_ptr<void> addr_in;      // 注意一定要初始化指针
     public:
@@ -84,7 +87,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     class SocketAddressV6:public SocketAddress{
     public:
         SocketAddressV6();                  // 默认构造函数，给addr_in new 一个sockaddr_in
-        SocketAddressV6(SocketAddressV6& addr);           // 内部完成addr_in指针的交换
+        SocketAddressV6(SocketAddressV6& addr);           
         SocketAddressV6(SocketAddressV6&& addr);
         ~SocketAddressV6();
         // 重写获取sockaddr大小的函数
@@ -157,6 +160,9 @@ namespace AntonaStandard::MultiPlatformSupport{
                 // 输出，读取缓冲区的指针eback,gptr,egptr
                     // 即将可读的内容清空
             this->setg(&(buffer.front()),&(buffer.front()),this->pptr());
+        }
+        inline size_t size()const{
+            return this->buffer.size();
         }
     };
 

@@ -2,7 +2,10 @@
 #define FRACTION_H
 
 #include <sstream>
+#include <cassert>
+#include <algorithm>
 #include "Utilities/Exception.h"
+#include "TestingSupport/TestingMessageMacro.h"
 
 #define AntonaStandard_Fraction_VERSION "v-1.1.0"
 #define AntonaStandard_Fraction_EDITTIME "2023/8/8"
@@ -45,29 +48,40 @@ namespace AntonaStandard{
 namespace AntonaStandard::Math{
 
     class Fraction{
+        TESTING_MESSAGE
     private:
         int numerator;      // 分子
         int denominator;    // 分母
     public:
-        static int Euclid(int lhs, int rhs) {
+        static int Euclid(int num, int den) {
             // 计算两个数的最大公因数(欧几里得算法)
+            
             // 声明为静态成员函数
             int pivot;
-            while (lhs % rhs != 0) {
-                pivot = rhs;
-                rhs = lhs % rhs;
-                lhs = pivot;
+            while (num % den != 0) {
+                pivot = den;
+                den = num % den;
+                num = pivot;
             }
-            return rhs;
+            return den;
         };
         // 保留隐式转换，减少编程工作
         Fraction(const char* str){
-            this->denominator = 1;
-            std::stringstream inistream;
-            inistream<<str;
+            std::stringstream inistream(str);
             inistream>>(*this);    
         }
-        Fraction(int num=0,int den=1):numerator(num),denominator(den){};
+        Fraction(int num=0,int den=1){
+            assert(den != 0);
+            int ratio = this->Euclid(num,den);
+            num /=ratio;
+            den /=ratio;
+            if(den <0){
+                num *= -1;
+                den *= -1;
+            }
+            this->numerator = num;
+            this->denominator = den;
+        };
         Fraction(const Fraction& f):numerator(f.getNumerator()),denominator(f.getDenominator()){};
 
         Fraction& operator=(const Fraction& rhs);
@@ -80,15 +94,38 @@ namespace AntonaStandard::Math{
             return denominator;
         }
 
-        inline const Fraction inverse(){
-            //返回这个分数的倒数
-            return Fraction(this->getDenominator(),this->getNumerator());
-        }
 
         // 负号运算符，将一个分数变成其相反数
         inline const Fraction  operator-(){
-            return Fraction(-this->numerator,this->denominator);
+            return Fraction(-this->getNumerator(),this->getDenominator());
         }
+
+        inline const Fraction operator+(){
+            return *this;
+        }
+
+        inline const Fraction operator++(int){
+            Fraction temp = *this;
+            *this += Fraction(1);
+            return temp;
+        }
+
+        inline const Fraction operator--(int){
+            Fraction temp = *this;
+            *this -= Fraction(1);
+            return temp;
+        }
+
+        inline const Fraction operator--(){
+            *this -= Fraction(1);
+            return *this;
+        }
+
+        inline const Fraction operator++(){
+            *this += Fraction(1);
+            return *this;
+        }
+
         Fraction& operator+=(const Fraction& f);
 
         Fraction& operator-=(const Fraction& f);

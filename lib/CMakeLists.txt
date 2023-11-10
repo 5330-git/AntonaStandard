@@ -6,8 +6,6 @@ file(GLOB SRC ${SrcPATH}/*.cpp)
 # 包含头文件路径
 include_directories(${IncludePATH})
 
-
-
 # 分别在Windows平台和Linux平台下生成库文件
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
     # 库文件重定向

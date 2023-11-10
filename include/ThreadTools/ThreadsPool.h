@@ -11,6 +11,7 @@
 #include <cassert>
 #include <chrono>
 #include <functional>
+#include "TestingSupport/TestingMessageMacro.h"
 
 #define AntonaStandard_ThreadTools_ThreadsPool_VERSION "1.0.0"
 #define AntonaStandard_ThreadTools_ThreadsPool_EDIT_TIME "2023/8/8"
@@ -28,6 +29,7 @@ namespace AntonaStandard{
 namespace AntonaStandard::ThreadTools{
     
     class ThreadsPool{
+        TESTING_MESSAGE
     private:
         // 数据成员
         std::atomic<bool> is_shutdown;

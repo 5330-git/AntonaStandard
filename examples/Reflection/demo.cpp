@@ -30,8 +30,8 @@ public:
 
 int main(){
     Factory fac;							// 实例化派生的反射类（其实是一种广义的简单工厂）
-    A* a  = (A*)fac.createInstance("A");	// 创建A的实例，注意需要对返回值类型进行强制转换
-    B* b = (B*)fac.createInstance("B");
+    auto a  = std::static_pointer_cast<A>(fac.createInstance("A"));	// 创建A的实例，注意需要对返回值类型进行强制转换
+    auto b = std::static_pointer_cast<B>(fac.createInstance("B"));
     try{
         fac.createInstance("C");				// 由于类C未被注册，因此会抛出异常
     }

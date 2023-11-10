@@ -5,7 +5,7 @@
 #include <list>
 #include <stdexcept>
 #include "Exception.h"
-
+#include "TestingSupport/TestingMessageMacro.h"
 
 #define AntonaStandard_Delegate_VERSION "2.1.0"
 #define AntonaStandard_Delegate_EDIT_TIME "2023/8/8"
@@ -71,6 +71,7 @@ namespace AntonaStandard::Utilities{
     // 抽象基类
     template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
     class BaseFuncPointerContainer{
+        TESTING_MESSAGE
     public:
         BaseFuncPointerContainer(){};
             // 声明虚析构函数
@@ -79,11 +80,8 @@ namespace AntonaStandard::Utilities{
         virtual bool isType(const std::type_info& type)=0;
         virtual type_RETURN_VALUE call(type_PARAMETERS_PACK... para_args)=0;
         virtual bool equal(BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>* container_ptr)const=0;
-        inline virtual BaseFuncPointerContainer* clone(){
-            // 返回一个类型样本（this指针），使得可以反向通过auto推断出其指针类型
-            return this;
-        }
-        inline virtual BaseFuncPointerContainer* copy(const BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>& other)=0;
+        inline virtual BaseFuncPointerContainer* clone()=0;
+        // inline virtual BaseFuncPointerContainer* copy(const BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>& other)=0;
         inline virtual BaseFuncPointerContainer* copy()=0;
     };
     // 保存非静态成员函数指针的容器
@@ -114,10 +112,10 @@ namespace AntonaStandard::Utilities{
             return this;
         }
             // 重写创建函数，返回值协变（不协变也可以）
-        inline virtual MethodFuncPointerContainer* copy(const BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>& other)override{
-            const MethodFuncPointerContainer& _other = static_cast<const MethodFuncPointerContainer&>(other);
-            return new MethodFuncPointerContainer(_other.obj_ptr,_other.func_ptr);
-        }
+        // inline virtual MethodFuncPointerContainer* copy(const BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>& other)override{
+        //     const MethodFuncPointerContainer& _other = static_cast<const MethodFuncPointerContainer&>(other);
+        //     return new MethodFuncPointerContainer(_other.obj_ptr,_other.func_ptr);
+        // }
         inline virtual MethodFuncPointerContainer* copy()override{
             return new MethodFuncPointerContainer(this->obj_ptr,this->func_ptr);
         }
@@ -146,10 +144,10 @@ namespace AntonaStandard::Utilities{
             return this;
         }
             // 重写创建函数，返回值协变（不协变也可以）
-        inline virtual Static_NormalFuncPointerContainer* copy(const BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>& other)override{
-            const Static_NormalFuncPointerContainer& _other = static_cast<const Static_NormalFuncPointerContainer&>(other);
-            return new Static_NormalFuncPointerContainer(_other.func_ptr);
-        }
+        // inline virtual Static_NormalFuncPointerContainer* copy(const BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>& other)override{
+        //     const Static_NormalFuncPointerContainer& _other = static_cast<const Static_NormalFuncPointerContainer&>(other);
+        //     return new Static_NormalFuncPointerContainer(_other.func_ptr);
+        // }
         inline virtual Static_NormalFuncPointerContainer* copy()override{
             return new Static_NormalFuncPointerContainer(this->func_ptr);
         }
@@ -158,6 +156,7 @@ namespace AntonaStandard::Utilities{
     // 委托类
     template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK>
     class Delegate<type_RETURN_VALUE(type_PARAMETERS_PACK...)>{
+        TESTING_MESSAGE
         // 通过链表存储容器
     public:
         // 声明一下链表和迭代器，化简表达
@@ -203,6 +202,7 @@ namespace AntonaStandard::Utilities{
     // 委托类,返回值为void的具体化版本
     template<typename... type_PARAMETERS_PACK>
     class Delegate<void(type_PARAMETERS_PACK...)>{
+        TESTING_MESSAGE
         // 通过链表存储容器
     public:
         // 声明一下链表和迭代器，化简表达
@@ -372,7 +372,10 @@ namespace AntonaStandard::Utilities{
                 // 找到链表中与other_ptr保存的函数指针相等的容器，删除other_ptr和iter
                 delete other_ptr;
                 other_ptr = nullptr;
+                delete (*iter);
                 this->delegateList.erase(iter);
+                // 删除iter !
+                
                 return *this;
             }
             ++iter;
@@ -514,6 +517,8 @@ template<typename... type_PARAMETERS_PACK>
                 // 找到链表中与other_ptr保存的函数指针相等的容器，删除other_ptr和iter
                 delete other_ptr;
                 other_ptr = nullptr;
+                // 删除iter !
+                delete (*iter);
                 this->delegateList.erase(iter);
                 return *this;
             }

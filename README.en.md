@@ -12,11 +12,11 @@
 
    **Linux(Ubuntu 22.04)**: 
 
-   - change your current path to project directory `build` .Then input threse commands:
+   - change your current path to project directory `build1` .Then input these commands:
 
      ```bash
      rm * -rf 	# Clear the directory at first
-     cmake ../ 	# Create Makefile script by cmake tool 
+     cmake ../ 	# Create Makefile script by cmake tool . avaliable item(compile the examples) -D ASD_BUILD_EXAMPLE=ON
      make 		# Build the source files of library and example 
      ```
 
@@ -30,7 +30,7 @@
 
      ```powershell
      Remove-Item -Path ./* # Clear the direactory at first
-     cmake .. -G "MinGW Makefiles" # Indicate the compile tools，because cmake create VS building files in defalut under platform Windows 
+     cmake .. -G "MinGW Makefiles" # Indicate the compile tools，because cmake create VS building files in defalut under platform Windows .avaliable item(compile the examples) -D ASD_BUILD_EXAMPLE=ON
      mingw32-make.exe # Build the project according to the Makefile script
      ```
 
@@ -82,7 +82,41 @@
 
 
 
-**Attention:  the demo program may complain "can not find \*.dll" ,so you can copy the library files from `./lib/Windows` to `bin` to make the program work normally** 
+#### Compile the Unit Tests
+
+- Base on `Google Test` framework
+
+1.  Enter the directory : `testing_set` 
+
+   **Linux(Ubuntu 22.04)**: 
+
+   - Enter  `build1` 
+
+     ```bash
+     cmake ..
+     make
+     ```
+
+   - Leave from `build1` directory and enter  `CoverageStatistic` ，execute bash shell : `CreateFromDirBuild1.sh`  which will execute the testing programs automatically.
+
+     ```bash
+     ./CreateFromDirBuild1.sh
+     ```
+
+   - The coverage report will be outputted into `result` 
+
+   
+
+   **Windows(10)**:
+
+   - 进入目录 `build` 
+
+     ```powershell
+     cmake .. -G 'MinGW Makefiles'
+     mingw32-make
+     ```
+
+   - 测试程序生成路径为 `testing_set/bin/Windows`
 
 #### History Versions
 
@@ -120,8 +154,8 @@
 
 2023/10/24 AntonaStandard-v-9.2.0 Transient version
 
+2023/11/10 AntonaStandard-v-10.0.0 Import Unit test based on `Google Test` framework to promise the robustness. Replaced the raw pointer by smart pointer (`std::shared_ptr`), decrease the possibilities of memory leak. 
+
 #### Author's Blog
-
-
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
