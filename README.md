@@ -155,7 +155,7 @@
 
 2023/11/10 AntonaStandard-v-10.0.0 引入基于Google Test 的单元测试，保障代码的健壮性。使用智能指针替代裸指针，降低内存泄漏的风险。
 
-2023/12/12 AntonaStandard-v-10.0.1 完成``MultiPlatformSupport::SocketSupport` 的UDP 基础功能
+2023/12/12 AntonaStandard-v-10.0.1 完成`MultiPlatformSupport::SocketSupport` 的UDP 基础功能
 
 #### 原作者博客
 

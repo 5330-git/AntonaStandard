@@ -156,6 +156,8 @@
 
 2023/11/10 AntonaStandard-v-10.0.0 Import Unit test based on `Google Test` framework to promise the robustness. Replaced the raw pointer by smart pointer (`std::shared_ptr`), decrease the possibilities of memory leak. 
 
+2023/12/12 AntonaStandard-v-10.0.1 Finished the fundamental functions of UDP Communications in `MultiPlatformSupport::SocketSupport`
+
 #### Author's Blog
 
 - [CSDN_Blog](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
