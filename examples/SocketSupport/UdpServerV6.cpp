@@ -6,14 +6,13 @@ using namespace std;
 using namespace AntonaStandard::MultiPlatformSupport;
 
 int main(){
-	cout<<"Lauching TCP V4 Socket Server..."<<endl;
+	cout<<"Lauching UDP V6 Socket Server..."<<endl;
 	
-	Socket server_socket = SocketCommunication::get().createSocket(SocketProtocol::ipv4,
-	SocketType::Stream,9999,"127.0.0.1");							// 创建套接字
+	Socket server_socket = SocketCommunication::get().createSocket(SocketProtocol::ipv6,
+	SocketType::Dgram,11111,"0:0:0:0:0:0:0:1");							// 创建套接字
 	try{
 		SocketCommunication::get().bindSocket(server_socket);				// 绑定套接字
-		// 设置监听
-		SocketCommunication::get().listenSocket(server_socket);				// 监听套接字
+		// 无需监听
 	}
 	catch(std::runtime_error& e){
 		cout<<e.what()<<endl;
@@ -24,34 +23,26 @@ int main(){
 	mt19937 gen(rd());
 	uniform_int_distribution<> dis(100, 1000);
 	// 绑定套接字
-	// 等待连接
-	cout<<"Waiting for Clients connection..."<<endl;
-	Socket client_socket = SocketCommunication::get().acceptSocket(server_socket);		// 等待连接
-	cout<<"Connected with client: "<<client_socket.getAddress()->getIp()<<":"<<client_socket.getAddress()->getPort()<<endl;
-	
+	// Udp 无需等待连接
+	std::shared_ptr<SocketAddress> client_address_ptr;				// 用于获取接收到的客户端地址数据
+
 	SocketDataBuffer buf;
 	iostream stream(&buf);
 	buf.resize(128);
 	string message;
 	while(true){
 		buf.clear();
-		size_t len = SocketCommunication::get().receive(client_socket,buf);
-
-		if(len == 0){
-			cout<<"Break the connection"<<endl;
-			break;
-		}
+		size_t len = SocketCommunication::get().receiveFrom(server_socket,client_address_ptr,buf);
 		// 按行读取
 		std::getline(stream,message);
-		cout<<"From Client: "<<endl<<"  "<<message<<endl;
+		cout<<"From Client "<<client_address_ptr->getIp()<<" : "<<client_address_ptr->getPort()<<" : "<<endl<<"  "<<message<<endl;
 		buf.clear();
 		stream<<"hello from server : "<<dis(gen)<<endl;
 		
-		SocketCommunication::get().send(client_socket,buf);
+		SocketCommunication::get().sendTo(server_socket,client_address_ptr,buf);
 	}
 	// 手动关闭
 	SocketCommunication::get().closeSocket(server_socket);
-	SocketCommunication::get().closeSocket(client_socket);
 	#ifdef AntonaStandard_PLATFORM_WINDOWS
         system("pause");
     #endif

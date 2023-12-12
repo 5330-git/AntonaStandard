@@ -45,7 +45,8 @@ namespace AntonaStandard{
 namespace AntonaStandard::MultiPlatformSupport{
     enum SocketType{
         Stream = SOCK_STREAM,       // 流式协议
-        Dgram = SOCK_DGRAM          // 报文协议
+        Dgram = SOCK_DGRAM,          // 报文协议
+        INVALID = ~0
     };
 
     enum SocketProtocol{
@@ -180,6 +181,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     private:
         Socketid_t socketid = INVALID_SOCKET;
         std::shared_ptr<SocketAddress> address;
+        SocketType type=SocketType::INVALID;
         // 以下三个函数只有SocketCommunication 可见
         Socket();
         void setAddress(std::shared_ptr<SocketAddress> addr);
@@ -190,6 +192,9 @@ namespace AntonaStandard::MultiPlatformSupport{
     public:
         inline std::shared_ptr<SocketAddress> getAddress(){
             return this->address;
+        }
+        inline SocketType getType(){
+            return this->type;
         }
     public:
         inline Socketid_t getSocketId() const{
@@ -228,8 +233,10 @@ namespace AntonaStandard::MultiPlatformSupport{
         void connectSocket(Socket& socket);     // （客户端）连接服务器
         void closeSocket(Socket& socket);       // （客户端/服务端）关闭套接字
 
-        void send(Socket& socket,SocketDataBuffer& data);         // 发送数据
-        size_t receive(Socket& socket,SocketDataBuffer& data);      // 接收数据
+        void send(Socket& socket,SocketDataBuffer& data);         // TCP发送数据
+        void sendTo(Socket& ssocket, std::shared_ptr<SocketAddress>& ret_client_addr, SocketDataBuffer& data);           // UDP 发送数据
+        size_t receive(Socket& socket, SocketDataBuffer& data);                // TCP 接收数据
+        size_t receiveFrom(Socket& ssocket, std::shared_ptr<SocketAddress>& ret_client_addr, SocketDataBuffer& data);      // UDP接收数据
     };
 };
 

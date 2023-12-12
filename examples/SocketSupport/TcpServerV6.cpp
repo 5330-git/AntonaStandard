@@ -6,6 +6,8 @@ using namespace std;
 using namespace AntonaStandard::MultiPlatformSupport;
 
 int main(){
+	cout<<"Lauching TCP V6 Socket Server..."<<endl;
+
 	Socket server_socket = SocketCommunication::get().createSocket(SocketProtocol::ipv6,
 	SocketType::Stream,11111,"0:0:0:0:0:0:0:1");							// 创建套接字
 	try{

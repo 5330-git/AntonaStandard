@@ -15,6 +15,8 @@ namespace AntonaStandard::MultiPlatformSupport{
     Socket::Socket(Socket&& socket) {
         this->address = socket.getAddress();
         socket.address = nullptr;
+        this->type = socket.type;
+        socket.type = SocketType::INVALID;
     }
 
     Socket::~Socket() {
@@ -24,6 +26,7 @@ namespace AntonaStandard::MultiPlatformSupport{
     void Socket::swap(Socket& socket) {
         std::swap(this->socketid, socket.socketid);
         std::swap(this->address, socket.address);
+        std::swap(this->type,socket.type);
     }
 
     Socket& Socket::operator=(Socket&& socket) {
@@ -66,6 +69,7 @@ namespace AntonaStandard::MultiPlatformSupport{
                     break;
             }
             socket.setSocketId(::socket(protocol, type, defualt));
+            socket.type = type;
             return socket;
     }
 
@@ -110,6 +114,7 @@ namespace AntonaStandard::MultiPlatformSupport{
         Socket client;
         // 从服务端套接字 ssocket 拷贝地址对象，保证二者使用的协议相同
         client.setAddress(ssocket.getAddress()->copy());
+        // 拷贝以后 accept 的最后一个参数其实就不需要了，因为客户端的地址结构长度与服务端的地址结构长度相同
         #ifdef AntonaStandard_PLATFORM_WINDOWS
             int caddr_len = client.getAddress()->getAddrInSize();
         #elif AntonaStandard_PLATFORM_LINUX
@@ -117,7 +122,8 @@ namespace AntonaStandard::MultiPlatformSupport{
         #endif
         
         // 调用accept 将客户端的信息写入Socket对象
-        Socket::Socketid_t clientid = accept(ssocket.getSocketId(), (sockaddr*)(client.getAddress()->getAddrIn().get()), &caddr_len);
+        Socket::Socketid_t clientid = accept(ssocket.getSocketId(), 
+            static_cast<sockaddr*>(client.getAddress()->getAddrIn().get()), &caddr_len);
         if (clientid < 0) {
             // result 不为0，返回错误
             #ifdef AntonaStandard_PLATFORM_WINDOWS
@@ -130,12 +136,14 @@ namespace AntonaStandard::MultiPlatformSupport{
             throw std::runtime_error(ss.str());
         }
         client.setSocketId(clientid);
+        // acceptSocket 为TCP 套接字专用
+        client.type = SocketType::Stream;
         return client;
     }
 
     void SocketCommunication::connectSocket(Socket& ssocket) {
         // 连接ssocket对应主机的套接字
-        int error = ::connect(ssocket.getSocketId(), (sockaddr*)ssocket.getAddress()->getAddrIn().get(),
+        int error = ::connect(ssocket.getSocketId(), static_cast<sockaddr*>(ssocket.getAddress()->getAddrIn().get()),
                             ssocket.getAddress()->getAddrInSize());
         if (error) {
             // result 不为0，返回错误
@@ -180,8 +188,62 @@ namespace AntonaStandard::MultiPlatformSupport{
         }
     }
 
-    size_t SocketCommunication::receive(Socket& socket,SocketDataBuffer& data) {
-        size_t size_accepted = recv(socket.getSocketId(), data.receivingPos(), data.getReceivableSize(), 0);
+    void SocketCommunication::sendTo(Socket& ssocket,std::shared_ptr<SocketAddress>& ret_client_addr, 
+        SocketDataBuffer& data) {
+            #ifdef AntonaStandard_PLATFORM_WINDOWS
+            if (data.getSendableSize() > INT_MAX) {
+                std::stringstream ss;
+                ss<<"send data size is too large, size = "<<data.getSendableSize();
+                throw std::runtime_error(ss.str());
+            }
+        #endif
+        
+        // 调用sendto
+        int size_send = ::sendto(ssocket.getSocketId(), data.sendingPos(), data.getSendableSize(), 0,
+            static_cast<const sockaddr*>(ret_client_addr->getAddrIn().get()), ret_client_addr->getAddrInSize());
+
+        if (size_send == -1) {
+            // error = -1，返回错误
+            #ifdef AntonaStandard_PLATFORM_WINDOWS
+                int error = WSAGetLastError();
+            #elif AntonaStandard_PLATFORM_LINUX
+                int error = errno;
+            #endif
+            std::stringstream ss;
+            ss<<"send error, error = "<<error;
+            throw std::runtime_error(ss.str());
+        }
+    }  
+        
+        
+        // TCP 专用
+    size_t SocketCommunication::receive(Socket& csocket,SocketDataBuffer& data) {
+        size_t size_accepted = recv(csocket.getSocketId(), data.receivingPos(), data.getReceivableSize(), 0);
+        if (size_accepted < 0) {
+            #ifdef AntonaStandard_PLATFORM_WINDOWS
+                int error = WSAGetLastError();
+            #elif AntonaStandard_PLATFORM_LINUX
+                int error = errno;
+            #endif
+            std::stringstream ss;
+            ss<<"receive error, error = "<<error;
+            throw std::runtime_error(ss.str());
+        }
+        data.movePutPos(size_accepted);
+        return size_accepted;
+    }
+
+    // UDP 专用
+    size_t SocketCommunication::receiveFrom(Socket& ssocket,std::shared_ptr<SocketAddress>& ret_client_addr, SocketDataBuffer& data) {
+        #ifdef AntonaStandard_PLATFORM_WINDOWS
+            int caddr_len = ssocket.getAddress()->getAddrInSize();
+        #elif AntonaStandard_PLATFORM_LINUX
+            socklen_t caddr_len = ssocket.getAddress()->getAddrInSize();
+        #endif
+        ret_client_addr = ssocket.getAddress()->copy();
+        size_t size_accepted = recvfrom(ssocket.getSocketId(), data.receivingPos(), data.getReceivableSize(), 0, 
+                                    static_cast<sockaddr*>(ret_client_addr->getAddrIn().get()), &caddr_len);
+        
         if (size_accepted < 0) {
             #ifdef AntonaStandard_PLATFORM_WINDOWS
                 int error = WSAGetLastError();
