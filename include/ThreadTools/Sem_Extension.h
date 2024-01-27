@@ -1,5 +1,5 @@
-#ifndef SEM_EXTENSION_H
-#define SEM_EXTENSION_H
+#ifndef THREADTOOLS_SEM_EXTENSION_H
+#define THREADTOOLS_SEM_EXTENSION_H
 #include <semaphore>
 #include <mutex>
 #include "TestingSupport/TestingMessageMacro.h"

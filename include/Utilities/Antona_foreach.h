@@ -1,5 +1,5 @@
-#ifndef ANTONA_FOREACH_H
-#define ANTONA_FOREACH_H
+#ifndef UTILITIES_ANTONA_FOREACH_H
+#define UTILITIES_ANTONA_FOREACH_H
 
 #define Antona_foreach_AUTHOR "Anton"
 #define Antona_foreach_VERSION "1.1.0"

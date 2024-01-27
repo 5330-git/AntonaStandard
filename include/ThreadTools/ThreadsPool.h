@@ -1,10 +1,10 @@
-#ifndef THREADSPOOL_H
-#define THREADSPOOL_H
+#ifndef THREADTOOLS_THREADSPOOL_H
+#define THREADTOOLS_THREADSPOOL_H
 
 #include <mutex>
 #include <thread>
 #include <vector>
-#include "Utilities/ThreadSafeQueue.h"
+#include <Utilities/ThreadSafeQueue.h>
 #include <future>
 #include <atomic>
 #include <condition_variable>

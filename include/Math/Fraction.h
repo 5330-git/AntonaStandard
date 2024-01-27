@@ -1,10 +1,10 @@
-#ifndef FRACTION_H
-#define FRACTION_H
+#ifndef MATH_FRACTION_H
+#define MATH_FRACTION_H
 
 #include <sstream>
 #include <cassert>
 #include <algorithm>
-#include "Utilities/Exception.h"
+#include <Globals/Exception.h>
 #include "TestingSupport/TestingMessageMacro.h"
 
 #define AntonaStandard_Fraction_VERSION "v-1.1.0"

@@ -1,10 +1,10 @@
-#ifndef DELEGATE_H
-#define DELEGATE_H
+#ifndef UTILITIES_DELEGATE_H
+#define UTILITIES_DELEGATE_H
 #include <typeinfo>
 #include <vector>
 #include <list>
 #include <stdexcept>
-#include "Exception.h"
+#include <Globals/Exception.h>
 #include "TestingSupport/TestingMessageMacro.h"
 
 #define AntonaStandard_Delegate_VERSION "2.1.0"

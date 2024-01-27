@@ -327,7 +327,7 @@ Thus, the following contains will describes the improvement suggestions in detai
 
 
 - 推演
-  - **基本业务推演**
+- **基本业务推演** 
 
 ```cpp
 // 客户端
@@ -375,5 +375,74 @@ SocketAddress remote_address;
 local_socket.receiveFrom(remote_address,buf);
 
 local_socekt.sendTo(remote_address,buf);
+```
+
+- **构造推演**
+
+  - `SocketAddress` 推演
+
+    ```c++
+    SocketAddress(IPType ip_type,unsigned short port,string addr){
+        switch(ip_type){
+            case ipv4:
+                this->addr_in = std::make_shared<sockaddr_in>();
+                // 首先将addr_in进行转换，方便操作
+                sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in.get();
+                // 设置协议 ipv4
+                this_addr_in->sin_family = SocketProtocol::ipv4;
+                // 设置ip
+                this_addr_in->sin_addr.s_addr = inet_addr(ip);
+                // 设置端口
+                this_addr_in->sin_port = htons(port);
+                break;
+            case ipv6:
+                this->addr_in = std::make_shared<sockaddr_in6>();
+                // 首先转化addr_in，方便操作
+                sockaddr_in6* this_addr_in = (sockaddr_in6*)this->addr_in.get();
+                // 设置协议
+                this_addr_in->sin6_family = SocketProtocol::ipv6;
+                // 设置ip
+                inet_pton(ip_type,ip,&(this_addr_in->sin6_addr));
+                // 设置端口
+                this_addr_in->sin6_port = htons(port);
+                break;
+            default:
+                break;
+        }
+    }
+    
+    SocketAddress SocketAddress::loopBackAddress(IPType ip_type,unsigned short port){
+        switch(ip_type){
+            case ipv4:
+                return SocketAddress(ip_type,port,"127.0.0.1");
+            case ipv6:
+                return SocketAddress(ip_type,port,"::1");
+            default:
+                return SocketAddress();
+        }
+    }
+    
+    
+    ```
+
+    
+
+
+
+
+
+```mermaid
+classDiagram
+class SocketLibraryManager{
++ 	static SocketLibraryManager& manager();
++  void bind(SocketFD local_fd,const SocketAddress& local_address);
++  void connect(SocketFD remote_fd,const SocketAddress& remote_address);
++  void listen(SocketFD local_fd,int backlog);
++  SocketFD accept(SocketFD local_fd,SocketAddress& remote_address);
++  size_t receive(SocketFD remote_fd,SocketDataBuffer& buffer,int flags=0);
++  size_t send(SocketFD remote_fd,const SocketDataBuffer& buffer,int flags=0);
++  size_t receiveFrom(SocketFD src_fd,SocketDataBuffer& buffer,SocketAddress& remote_address);
++  size_t sendTo(SocketFD remote_fd,const SocketDataBuffer& buffer,const SocketAddress& remote_address);
+}
 ```
 

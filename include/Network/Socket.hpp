@@ -1,5 +1,5 @@
-#ifndef SOCKET_HPP
-#define SOCKET_HPP
+#ifndef NETWORK_SOCKET_HPP
+#define NETWORK_SOCKET_HPP
 #include <algorithm>
 #include <Network/Socket.h>
 namespace std{

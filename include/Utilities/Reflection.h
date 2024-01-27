@@ -1,10 +1,10 @@
-#ifndef REFLECTION_H
-#define REFLECTION_H
+#ifndef UTILITIES_REFLECTION_H
+#define UTILITIES_REFLECTION_H
 #include <unordered_map>
 #include <memory>
 #include <functional>
 #include <string>
-#include "Exception.h"
+#include <Globals/Exception.h>
 #include "TestingSupport/TestingMessageMacro.h"
 
 #define AntonaStandard_Reflection_VERSION "1.3.0"

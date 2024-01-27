@@ -1,5 +1,5 @@
-#ifndef THREADSAFEQUEUE_H
-#define THREADSAFEQUEUE_H
+#ifndef UTILITIES_THREADSAFEQUEUE_H
+#define UTILITIES_THREADSAFEQUEUE_H
 
 #include <deque>
 #include <mutex>
