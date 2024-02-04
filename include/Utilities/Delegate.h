@@ -24,7 +24,7 @@
 *                     - 由于返回值存到线性表中有时间成本，为返回值非void的事件委托添加了call_without_return接口，以无返回值的形式调用
 *   2023/1/2    2.0.1 - 修改了项目的宏信息
 *
-*   2023/8/8  v-2.1.0  修改命名空间从 AntonaStandard 到 AntonaStandard::Utilities
+*   2023/8/8  v-2.1.0  修改命名空间从 AntonaStandard 到 AntonaStandard::Globals
 *
 */
 
@@ -384,7 +384,7 @@ namespace AntonaStandard::Utilities{
         delete other_ptr;
         other_ptr = nullptr;
         // 循环正常结束，说明没有重复的函数指针,要删除的函数指针未找到，抛出异常，由客户端进行解决
-        throw AntonaStandard::Utilities::NotFound_Error("The function pointer was not found,fail to delete its container!");
+        throw AntonaStandard::Globals::NotFound_Error("The function pointer was not found,fail to delete its container!");
         
     }
 
@@ -528,7 +528,7 @@ template<typename... type_PARAMETERS_PACK>
         delete other_ptr;
         other_ptr = nullptr;
         // 循环正常结束，说明没有重复的函数指针,要删除的函数指针未找到，抛出异常，由客户端进行解决
-        throw AntonaStandard::Utilities::NotFound_Error("The function pointer was not found,fail to delete its container!");
+        throw AntonaStandard::Globals::NotFound_Error("The function pointer was not found,fail to delete its container!");
         
     }
 

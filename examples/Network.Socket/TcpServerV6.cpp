@@ -4,7 +4,7 @@ using namespace std;
 using namespace AntonaStandard;
 int main(){
     // 创建监听套接字,监听9000端口
-    Network::TCPListenSocket lissock(CPS::SocketAddress::anyAddress(9000,CPS::AddressFamily::ipv4));
+    Network::TCPListenSocket lissock(CPS::SocketAddress::anyAddress(9000,CPS::AddressFamily::ipv6));
     // 启动监听套接字
     lissock.launch();
 

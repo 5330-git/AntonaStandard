@@ -1,545 +1,435 @@
-// #include <Network/Socket.h>
-// #include <Network/Socket.hpp>
-// // #include "Socket.h"
-// AntonaStandard::Network::Socket::SocketLibraryManager::SocketLibraryManager() {
-//     // Windows 平台需要加载套接字库,而linux平台不需要做任何操作
-//     #ifdef AntonaStandard_PLATFORM_WINDOWS
-//         WSADATA wsaData;
-//         WSAStartup(MAKEWORD(2, 2), &wsaData);
-//     #endif
-// }
+#include <Network/Socket.h>
+// #include "Socket.h"
+namespace AntonaStandard::Network{
+    /***********Socket*******************
+     * 
+     * 
+ ____             _        _   
+/ ___|  ___   ___| | _____| |_ 
+\___ \ / _ \ / __| |/ / _ \ __|
+ ___) | (_) | (__|   <  __/ |_ 
+|____/ \___/ \___|_|\_\___|\__|
+                               
+     * 
+     * 
+     */
+    void Socket::assert_nullptr(
+            std::string msg){
+        if(
+            !this->manager || 
+            !this->prototype ||
+            !this->bind_or_remote_addr.getImp() ||
+            !this->flag){
+            throw AntonaStandard::Globals::NullPointer_Error(msg.c_str());
+        }
+    } 
 
-// void AntonaStandard::Network::Socket::SocketLibraryManager::launch() {
-//     volatile static SocketLibraryManager instance; // 创建单例实例
-// }
+    void Socket::setOption(CPS::SocketOptions option, SocketOptionValue value){
+        this->assert_nullptr("Socket::setOption(CPS::SocketOptions,SocketOptionValue)");
+        CPS::SocketLibraryManager::manager().setSocketOption(
+            this->manager->getSocketFd(),
+            CPS::SocketLevel::Socket_level,
+            option,
+            value.value_ptr().get(),
+            value.size()
+        );
+    }
 
-// AntonaStandard::Network::Socket::SocketLibraryManager::~SocketLibraryManager() {
-// // Windows 平台需要释放套接字库,而linux平台不需要做任何操作
-// #ifdef AntonaStandard_PLATFORM_WINDOWS
-//     WSACleanup();
-// #endif
-// }
-
-
-// void AntonaStandard::Network::Socket::bind(){
-//     int error = ::bind(this->fd, static_cast<sockaddr*>(this->address.getAddrIn().get()),
-//                             this->address.getAddrInSize());
-//     if (error) {
-//         // result 不为0，返回错误
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #else
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss << "bind error, error = " << error;
-//         throw std::runtime_error(ss.str());
-//     }
-// }
-
-// void AntonaStandard::Network::Socket::connect() {
-//     int error = ::connect(this->fd, static_cast<sockaddr*>(this->address.getAddrIn().get()),
-//                                   this->address.getAddrInSize());
-//     if (error) {
-//         // result 不为0，返回错误
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #else
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss << "connect error, error = " << error;
-//         throw std::runtime_error(ss.str());
-//     }
-// }
-
-// void AntonaStandard::Network::Socket::listen() {
-//     int error = ::listen(this->fd, SOMAXCONN); // 最大连接数由系统决定，通常是128或500
-//     if (error) { // result 不为0，返回错误
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #else
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss << "listen error, error = " << error;
-//         throw std::runtime_error(ss.str());
-//     }
-// }
-
-// AntonaStandard::Network::SocketAddress AntonaStandard::Network::Socket::accept(SocketFD& remote_fd) {
-//     SocketAddress remote_address = this->address;
-//     socklen_t len = remote_address.getAddrInSize();
-//     remote_fd = ::accept(this->fd, static_cast<sockaddr*>(remote_address.getAddrIn().get()), &len);
-//     if (remote_fd == INVALID_SOCKET) { // result 为 INVALID_SOCKET，抛出异常
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #else
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss << "accept error, error = " << error;
-//         throw std::runtime_error(ss.str());
-//     }
-//     return remote_address;
-// }
-
-// size_t AntonaStandard::Network::Socket::receive(SocketFD remote_fd,
-//                                                 SocketDataBuffer& buffer) {
-//     size_t size_accepted = ::recv(remote_fd, buffer.receivingPos(), buffer.getReceivableSize(), 0);
-//     if (size_accepted < 0) {
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss<<"receive error, error = '"<<error<<"' with target address = "<<this->address.getIP()<<":"<<this->address.getPort();
-//         throw std::runtime_error(ss.str());
-//     }
-//     buffer.movePutPos(size_accepted);
-//     return size_accepted;
-// }
-
-// size_t AntonaStandard::Network::Socket::send(SocketFD remote_fd,
-//                                             const SocketDataBuffer& buffer) {
-//     // Windows下需要检查长度是否超过INTMAX
-//     #ifdef AntonaStandard_PLATFORM_WINDOWS
-//         if (buffer.getSendableSize() > INT_MAX) {
-//             std::stringstream ss;
-//             ss<<"send data size is too large, size = "<<buffer.getSendableSize();
-//             throw std::runtime_error(ss.str());
-//         }
-//     #endif
-//     size_t size_send = ::send(remote_fd, buffer.sendingPos(), buffer.getSendableSize(), 0);
-//     if (size_send == -1) {
-//         // error = -1，返回错误
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss<<"send error, error = '"<<error<<"' with target address = "<<this->address.getIP()<<":"<<this->address.getPort();
-//         throw std::runtime_error(ss.str());
-//     }
-//     return size_send;
-// }
-
-// bool AntonaStandard::Network::Socket::isClosable(SocketFD fd) { 
-//     return fd != INVALID_SOCKET; 
-// }
-
-// AntonaStandard::Network::Socket::Socket(const SocketAddress& address,ProtocolType protocol):address(address){
-//     this->fd = ::socket(this->address.getIPType(), protocol, 0);
-// }
-
-// AntonaStandard::Network::Socket::Socket(SocketAddress&& address,
-//                                         ProtocolType protocol):address(std::move(address)) {
-//     this->fd = ::socket(this->address.getIPType(), protocol, 0);
-// }
-
-// AntonaStandard::Network::Socket::~Socket() {
-//     this->close();
-// }
-
-// void AntonaStandard::Network::Socket::swap(Socket& other){
-//     std::swap(this->fd, other.fd);
-//     std::swap(this->address, other.address);
-// }
-
-// AntonaStandard::Network::Socket::Socket(Socket&& other){
-//     this->swap(other);
-// }
-
-// const AntonaStandard::Network::Socket& AntonaStandard::Network::Socket::operator=(Socket&& other){
-//     this->swap(other);
-//     return *this;
-// }
-
-// size_t AntonaStandard::Network::Socket::receiveFrom(SocketAddress& remote_addr, SocketDataBuffer& buf){
-//     remote_addr = this->address;
-//     socklen_t len = remote_addr.getAddrInSize();
-//     size_t size_accepted = ::recvfrom(this->fd, buf.receivingPos(),buf.getReceivableSize(), 0,
-//                                     static_cast<sockaddr*>(remote_addr.getAddrIn().get()), &len);
-//     if (size_accepted < 0) {
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss<<"receive error, error = '"<<error<<"' with target address = "<<remote_addr.getIP()<<":"<<remote_addr.getPort();
-//         throw std::runtime_error(ss.str());
-//     }
-//     buf.movePutPos(size_accepted);
-//     return size_accepted;
-// }
-
-// size_t AntonaStandard::Network::Socket::sendTo(const SocketAddress& remote_addr,
-//                                             const SocketDataBuffer& buf) {
-//     // Windows下需要检查长度是否超过INTMAX
-//     #ifdef AntonaStandard_PLATFORM_WINDOWS
-//         if (buf.getSendableSize() > INT_MAX) {
-//             std::stringstream ss;
-//             ss<<"send data size is too large, size = "<<buf.getSendableSize();
-//             throw std::runtime_error(ss.str());
-//         }
-//     #endif
-//     size_t size_send = ::sendto(this->fd, buf.sendingPos(), buf.getSendableSize(), 0,
-//                                     static_cast<sockaddr*>(remote_addr.getAddrIn().get()), remote_addr.getAddrInSize());
-
-//     if (size_send == -1) {
-//         // error = -1，返回错误
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             int error = errno;
-//         #endif
-//         std::stringstream ss;
-//         ss<<"In 'sendTo' send error, error = '"<<error<<"' with target address = "<<remote_addr.getIP()<<":"<<remote_addr.getPort();
-
-//         throw std::runtime_error(ss.str());
-//     }
-//     return size_send;
-// }
-
-// void AntonaStandard::Network::Socket::close() {
-//     if(this->isClosable(this->fd)){
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             closesocket(this->fd);
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             close(this->fd);
-//         #endif
-//         this->fd = INVALID_SOCKET;
-//     }
-// }
-
-// void AntonaStandard::Network::Tcp::LocalSocket::close() {
-//     if(this->isClosable(this->remote_fd)){
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             closesocket(this->remote_fd);
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             close(this->remote_fd);
-//         #endif
-//         this->remote_fd = INVALID_SOCKET;
-//     }
-//     this->Socket::close(); // 关闭本地socket
-// }
-
-// AntonaStandard::Network::SocketAddressV4Imp::SocketAddressV4Imp() {
-//     this->addr_in = std::make_shared<sockaddr_in>();
-// }
-
-// AntonaStandard::Network::SocketAddressV4Imp::SocketAddressV4Imp(
-//     SocketAddressV4Imp& addr) {
-//     this->addr_in = std::make_shared<sockaddr_in>();
-//     // 基于内存拷贝addr地址数据结构
-//     std::memcpy(this->addr_in.get(),addr.getAddrIn().get(),sizeof(sockaddr_in));
-// }
-
-// AntonaStandard::Network::SocketAddressV4Imp::SocketAddressV4Imp(
-//     SocketAddressV4Imp&& addr) {
-//     this->addr_in.reset();
-//     using std::swap;
-//     swap(this->addr_in,addr.addr_in);
-// }
-
-// size_t AntonaStandard::Network::SocketAddressV4Imp::getAddrInSize() {
-//     return sizeof(sockaddr_in);
-// }
-
-// void AntonaStandard::Network::SocketAddressV4Imp::setAddr(const char* ip,
-//                                                         unsigned short port) {
-//     // 首先将addr_in进行转换，方便操作
-//     sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in.get();
-//     // 设置协议 ipv4
-//     this_addr_in->sin_family = IPType::ipv4;
-//     // 设置ip
-//     this_addr_in->sin_addr.s_addr = inet_addr(ip);
-//     // 设置端口
-//     this_addr_in->sin_port = htons(port);
-// }
-
-// std::string AntonaStandard::Network::SocketAddressV4Imp::getIP() {
-//     char temp_ip[20];           // ipv4最长15个字符
-//     // 首先将addr_in进行转换，方便操作
-//     sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in.get();
-//     // 获取ip
-//     auto ret = inet_ntop(IPType::ipv4,
-//         &(this_addr_in->sin_addr),
-//         temp_ip,sizeof(temp_ip));
-
-//     if(ret == nullptr){
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             int error = errno;
-//         #endif
-//         throw std::runtime_error(std::string("SocketAddressV4::getIP() failed: ") +
-//                                 std::to_string(error));
-//     }
-    
-//     return std::string(temp_ip); 
-// }
-
-// unsigned short AntonaStandard::Network::SocketAddressV4Imp::getPort() {
-//     // 首先将addr_in进行转换，方便操作
-//     sockaddr_in* this_addr_in = (sockaddr_in*)this->addr_in.get();
-//     // 获取端口
-//     return ntohs(this_addr_in->sin_port);
-// }
-
-// AntonaStandard::Network::IPType AntonaStandard::Network::SocketAddressV4Imp::getIPType() {
-//     return IPType::ipv4;
-// }
-
-// std::shared_ptr<AntonaStandard::Network::SocketAddressImp>
-// AntonaStandard::Network::SocketAddressV4Imp::copy() {
-//     return std::make_shared<SocketAddressV4Imp>(*this);
-// }
-
-// AntonaStandard::Network::SocketAddressV6Imp::SocketAddressV6Imp() {
-//     this->addr_in = std::shared_ptr<sockaddr_in6>();
-// }
-
-// AntonaStandard::Network::SocketAddressV6Imp::SocketAddressV6Imp(
-//     SocketAddressV6Imp& addr) {
-//     this->addr_in = std::make_shared<sockaddr_in6>();
-//     std::memcpy(this->addr_in.get(),addr.getAddrIn().get(),sizeof(sockaddr_in6));
-// }
-
-// AntonaStandard::Network::SocketAddressV6Imp::SocketAddressV6Imp(
-//     SocketAddressV6Imp&& addr) {
-//     this->addr_in.reset();
-//     using std::swap;
-//     swap(this->addr_in,addr.addr_in);
-// }
-
-// size_t AntonaStandard::Network::SocketAddressV6Imp::getAddrInSize() {
-//     return sizeof(sockaddr_in6);
-// }
-
-// void AntonaStandard::Network::SocketAddressV6Imp::setAddr(const char* ip,
-//                                                         unsigned short port) {
-//     // 首先转化addr_in，方便操作
-//     sockaddr_in6* this_addr_in = (sockaddr_in6*)this->addr_in.get();
-//     // 设置协议
-//     this_addr_in->sin6_family = IPType::ipv6;
-//     // 设置ip
-//     inet_pton(IPType::ipv6,ip,&(this_addr_in->sin6_addr));
-//     // 设置端口
-//     this_addr_in->sin6_port = htons(port);
-// }
-
-// std::string AntonaStandard::Network::SocketAddressV6Imp::getIP() {
-//     char temp_ip[50];
-//     auto ret = inet_ntop(IPType::ipv6,
-//         &(((sockaddr_in6*)this->addr_in.get())->sin6_addr),
-//         temp_ip,sizeof(temp_ip));
-//     if(ret == nullptr){
-//         #ifdef AntonaStandard_PLATFORM_WINDOWS
-//             int error = WSAGetLastError();
-//         #elif AntonaStandard_PLATFORM_LINUX
-//             int error = errno;
-//         #endif
-//         // 抛出异常
-//         throw std::runtime_error("SocketAddressV6::getIP() failed: " + 
-//         std::to_string(error));
-//     }
-//     return std::string(temp_ip);
-// }
-
-// unsigned short AntonaStandard::Network::SocketAddressV6Imp::getPort() {
-//     // 首先转化addr_in 方便操作
-//     sockaddr_in6* this_addr_in = (sockaddr_in6*)this->addr_in.get();
-//     return ntohs(this_addr_in->sin6_port);
-// }
-
-// AntonaStandard::Network::IPType AntonaStandard::Network::SocketAddressV6Imp::getIPType() {
-//     return IPType::ipv6;
-// }
-
-// std::shared_ptr<AntonaStandard::Network::SocketAddressImp>
-// AntonaStandard::Network::SocketAddressV6Imp::copy() {
-//     return std::make_shared<SocketAddressV6Imp>(*this);
-// }
-
-// AntonaStandard::Network::SocketAddress::SocketAddress(IPType ip_type,unsigned short port,std::string ip){
-//     switch(ip_type){
-//         case IPType::ipv4:
-//             this->imp = std::make_shared<SocketAddressV4Imp>();
-//             this->imp->setAddr(ip.c_str(),port);
-//             break;
-//         case IPType::ipv6:
-//             this->imp = std::make_shared<SocketAddressV6Imp>();
-//             this->imp->setAddr(ip.c_str(),port);
-//             break;
-//         default:
-//             break;
-//     }
-// }
-
-// AntonaStandard::Network::SocketAddress::SocketAddress(const SocketAddress& other){
-//     this->imp = other.imp->copy();
-// }
-
-// void AntonaStandard::Network::SocketAddress::swap(SocketAddress& other) {
-//     using std::swap;
-//     swap(this->imp,other.imp);
-// }
-
-// const AntonaStandard::Network::SocketAddress& AntonaStandard::Network::SocketAddress::operator=(
-//     const SocketAddress& other) {
-//     SocketAddress temp(other);
-//     this->swap(temp); 
-//     return *this;
-// }
-
-// AntonaStandard::Network::SocketAddress::SocketAddress(SocketAddress&& other) {
-//     this->swap(other);
-// }
-
-// const AntonaStandard::Network::SocketAddress& AntonaStandard::Network::SocketAddress::operator=(
-//     SocketAddress&& other) {
-//     this->swap(other);
-//     return *this;
-// }
-
-// AntonaStandard::Network::SocketAddress AntonaStandard::Network::SocketAddress::loopBackAddress(
-//     unsigned short port, IPType ip_type) {
-//     switch(ip_type){
-//         case IPType::ipv4:
-//             return SocketAddress(IPType::ipv4,port,"127.0.0.1");
-//         case IPType::ipv6:
-//             return SocketAddress(IPType::ipv6,port,"::1");
-//         default:
-//             return SocketAddress(IPType::ipv4,port,"127.0.0.1");
-
-//     }
-// }
-
-// std::streambuf::int_type AntonaStandard::Network::SocketDataBuffer::overflow(
-//         std::streambuf::int_type c) {
-//         size_t read_pos = this->gptr()-this->eback();
-//         // 将buffer扩大到原来的二倍
-//         size_t put_pos = this->pptr()-this->pbase();
-//         size_t new_size = std::max(size_t(16),this->buffer.size()-1)*2+1;
-//         this->buffer.resize(new_size);
-//         // 将输入缓冲区的三个指针和输出缓冲区的三个指针重定向
-//             // 写入缓冲区的指针pbase,pptr,epptr
-//         this->setp(&(buffer.front()),&(buffer.back()));
-//         this->pbump(put_pos);
+    SocketOptionValue Socket::getOption(CPS::SocketOptions option) {
+        this->assert_nullptr("Socket::getOption(CPS::SocketOptions);");
         
-//             // 输出，读取缓冲区的指针eback,gptr,egptr
-//         this->setg(&(buffer.front()),&(buffer[read_pos]),this->pptr());
+        char val_buf[64] = {0};
+        socklen_t len = sizeof(val_buf);
 
-//         // 字符c是溢出的，还未存到内存中，因此需要调用sputc将其放回内存中
-//         this->sputc(c);
-//         return c;
-//     }
+        CPS::SocketLibraryManager::manager().getSocketOption(
+            this->manager->getSocketFd(),
+            CPS::SocketLevel::Socket_level,
+            option,
+            val_buf,
+            &len
+        );
 
-//     std::streambuf::int_type AntonaStandard::Network::SocketDataBuffer::underflow() {
-//         if(this->gptr()>=this->pptr()){
-//             // 可读的缓冲区已经耗尽，只能等待可读区扩展后才能继续读取
-//             return EOF;
-//         }
-//         // 读取缓存区指针重定向(扩展读取上限)
-//         this->setg(this->eback(),this->gptr(),this->pptr());
-//         return traits_type::to_int_type(*gptr());
-//     }
+        return SocketOptionValue(val_buf,len);
+    }
 
-//     std::streambuf::int_type AntonaStandard::Network::SocketDataBuffer::pbackfail(
-//         std::streambuf::int_type c) {
-//         if(c != EOF){
-//             if(this->gptr()>this->eback()){
-//                 // 有位置可放回
-//                 this->gbump(-1);        // 将gptr移动到上一个位置
-//                 *(this->gptr()) = c;
-//             }
-//             // EOF 会导致后续任何对istream的操作都无效，因此我们不主动返回EOF
-//         }
-//         return c;
-//     }
+    Socket::Socket(const Socket& other) {
+        this->manager = other.manager;
+        this->prototype = other.prototype;
+        this->bind_or_remote_addr = other.bind_or_remote_addr;
+        this->flag = other.flag;
+    }
 
+    Socket::Socket(Socket&& other) {
+        using std::swap;
+        swap(this->manager,other.manager);
+        swap(this->prototype,other.prototype);
+        swap(this->bind_or_remote_addr,other.bind_or_remote_addr);
+        swap(this->flag,other.flag);
+    }
+
+    void Socket::launch() {
+        std::call_once(*(this->flag),[this](){
+            this->launch_stuff();
+        });
+    }
+
+    void Socket::setReuseAddress(bool option) {
+        SocketOptionValue val(option);
+        this->setOption(
+            CPS::SocketOptions::ReuseAddress,
+            val
+        );
+    }
+
+    bool Socket::isReuseAddress() { 
+        auto val = this->getOption(CPS::SocketOptions::ReuseAddress);
+        return *static_cast<bool*>(val.value_ptr().get());
+    }
+
+    /************TCPListenSocket********
+     * 
+ _____ ____ ____  _     _     _             ____             _        _   
+|_   _/ ___|  _ \| |   (_)___| |_ ___ _ __ / ___|  ___   ___| | _____| |_ 
+  | || |   | |_) | |   | / __| __/ _ \ '_ \\___ \ / _ \ / __| |/ / _ \ __|
+  | || |___|  __/| |___| \__ \ ||  __/ | | |___) | (_) | (__|   <  __/ |_ 
+  |_| \____|_|   |_____|_|___/\__\___|_| |_|____/ \___/ \___|_|\_\___|\__|
+     * 
+     * 
+    */
+
+
+    void TCPListenSocket::launch_stuff(){
+        // 创建套接字文件描述符
+        CPS::SocketFd fd = CPS::SocketLibraryManager::manager().socket(
+            this->get_bind_or_remote_addr().getAddressFamily(),
+            CPS::SocketType::Stream,
+            CPS::SocketProtocol::TCP
+        );
+
+        // 创建并安装套接字管理器
+        auto new_manager = std::make_shared<SocketManager>(fd.load());
+        this->install_manager(new_manager);
+        
+        // 创建并安装原型
+        auto new_prototype = std::make_shared<TCPSocketChannelImp>();
+        new_prototype->setAddress(this->get_bind_or_remote_addr());
+        new_prototype->setManager(this->getManager());
+        this->install_prototype(new_prototype);
+        
+        // 绑定地址
+        CPS::SocketLibraryManager::manager().bind(
+            fd,
+            this->get_bind_or_remote_addr()
+        );
+
+        // 设置监听
+        CPS::SocketLibraryManager::manager().listen(fd);
+    }
+
+    TCPSocket TCPListenSocket::accept() { 
+        this->assert_nullptr("TCPListenSocket::accept();");
+
+        CPS::SocketAddress remote_address;
+        CPS::SocketFd fd = CPS::SocketLibraryManager::manager().accept(
+            this->getManager()->getSocketFd(),
+            remote_address
+        );
+
+        // 创建TCP套接字
+        TCPSocket ret(remote_address);
+
+        // 创建并安装套接字管理器
+        auto new_manager = std::make_shared<SocketManager>(fd.load());
+        ret.install_manager(new_manager);
+
+        // 创建并安装原型
+        auto new_prototype = std::make_shared<TCPSocketChannelImp>();
+        new_prototype->setAddress(remote_address);
+        new_prototype->setManager(new_manager);
+        ret.install_prototype(new_prototype);
+        
+        // 设置once_flag 保证launch_stuff不会被调用
+        std::call_once(
+            *(ret.getOnceFlag().get()),
+            [](){
+                ;
+            }
+        );
+        
+        return ret;
+    }
+
+    SocketChannel TCPListenSocket::getChannel() { 
+        // 禁用该函数（抛出异常）
+        throw std::runtime_error("TCPListenSocket::getChannel() is not permited");
+    }
+
+    /************TCPSocket**************
+     * 
+ _____ ____ ____  ____             _        _   
+|_   _/ ___|  _ \/ ___|  ___   ___| | _____| |_ 
+  | || |   | |_) \___ \ / _ \ / __| |/ / _ \ __|
+  | || |___|  __/ ___) | (_) | (__|   <  __/ |_ 
+  |_| \____|_|   |____/ \___/ \___|_|\_\___|\__|
+                                                
+     * 
+    */
+
+    void TCPSocket::launch_stuff(){
+        // 创建套接字文件描述符
+        CPS::SocketFd fd = CPS::SocketLibraryManager::manager().socket(
+            this->get_bind_or_remote_addr().getAddressFamily(),
+            CPS::SocketType::Stream,
+            CPS::SocketProtocol::TCP
+        );
+
+        // 创建并安装套接字管理器
+        auto new_manager = std::make_shared<SocketManager>(fd.load());
+        this->install_manager(new_manager);
+        
+        // 创建并安装原型
+        auto new_prototype = std::make_shared<TCPSocketChannelImp>();
+        new_prototype->setAddress(this->get_bind_or_remote_addr());
+        new_prototype->setManager(this->getManager());
+        this->install_prototype(new_prototype);
+
+        // 连接到服务器
+        CPS::SocketLibraryManager::manager().connect(
+            fd,
+            this->get_bind_or_remote_addr()
+        );
+    }
+
+    SocketChannel TCPSocket::getChannel() { 
+        return SocketChannel(this->getPrototype());
+    }
+
+    /************UDPSocket***************
+     * 
+ _   _ ____  ____  ____             _        _   
+| | | |  _ \|  _ \/ ___|  ___   ___| | _____| |_ 
+| | | | | | | |_) \___ \ / _ \ / __| |/ / _ \ __|
+| |_| | |_| |  __/ ___) | (_) | (__|   <  __/ |_ 
+ \___/|____/|_|   |____/ \___/ \___|_|\_\___|\__|
+    *
+    */
+
+    void UDPSocket::launch_stuff(){
+        // 创建套接字文件描述符
+        CPS::SocketFd fd = CPS::SocketLibraryManager::manager().socket(
+            this->get_bind_or_remote_addr().getAddressFamily(),
+            CPS::SocketType::Datagram,
+            CPS::SocketProtocol::UDP
+        );
+
+        // 创建并安装套接字管理器
+        auto new_manager = std::make_shared<SocketManager>(fd.load());
+        this->install_manager(new_manager);
+        
+        // 创建并安装原型
+        auto new_prototype = std::make_shared<UDPSocketChannelImp>();
+        new_prototype->setAddress(this->get_bind_or_remote_addr());
+        new_prototype->setManager(this->getManager());
+        this->install_prototype(new_prototype);
+
+        // 绑定到本地地址
+        // 绑定地址
+        CPS::SocketLibraryManager::manager().bind(
+            fd,
+            this->get_bind_or_remote_addr()
+        );
+    }
+
+    SocketChannel UDPSocket::getChannel() {
+        return SocketChannel(this->getPrototype()->copy());
+    }
+
+    /************SocketOptionValue******
+     * 
+     * 
+ ____             _        _    ___        _   _          __     __    _            
+/ ___|  ___   ___| | _____| |_ / _ \ _ __ | |_(_) ___  _ _\ \   / /_ _| |_   _  ___ 
+\___ \ / _ \ / __| |/ / _ \ __| | | | '_ \| __| |/ _ \| '_ \ \ / / _` | | | | |/ _ \
+ ___) | (_) | (__|   <  __/ |_| |_| | |_) | |_| | (_) | | | \ V / (_| | | |_| |  __/
+|____/ \___/ \___|_|\_\___|\__|\___/| .__/ \__|_|\___/|_| |_|\_/ \__,_|_|\__,_|\___|
+                                    |_|                                             
+     * 
+     * 
+     * 
+     */
     
+    void SocketOptionValue::setValue(const void* val, socklen_t len) {
+        char* new_val = new char[len];
+        // 拷贝
+        std::memcpy(new_val, val, len);
+        this->val = std::shared_ptr<char>(new_val, [](char*& p) {
+            delete[] p;
+            p = nullptr;
+        });
+    }
 
-//     AntonaStandard::Network::SocketDataBuffer::SocketDataBuffer() {
-// 		this->resize(128);
-//     }
+    SocketOptionValue::SocketOptionValue(const void* val, socklen_t len) {
+        this->setValue(val,len);
+    }
 
-//     AntonaStandard::Network::Socket::ProtocolType AntonaStandard::Network::Tcp::LocalSocket::getProtocol()
-//         const {
-//         return ProtocolType::Stream;
-//     }
+    SocketOptionValue::SocketOptionValue(const SocketOptionValue& val) {
+        this->setValue(val.val.get(),val.size());
+    }
 
-//     AntonaStandard::Network::Socket::ProtocolType AntonaStandard::Network::Tcp::RemoteSocket::getProtocol()
-//         const {
-//         return ProtocolType::Stream;
-//     }
+    /************SocketChannel*********
+     * 
+     * 
+ ____             _        _    ____ _                            _ 
+/ ___|  ___   ___| | _____| |_ / ___| |__   __ _ _ __  _ __   ___| |
+\___ \ / _ \ / __| |/ / _ \ __| |   | '_ \ / _` | '_ \| '_ \ / _ \ |
+ ___) | (_) | (__|   <  __/ |_| |___| | | | (_| | | | | | | |  __/ |
+|____/ \___/ \___|_|\_\___|\__|\____|_| |_|\__,_|_| |_|_| |_|\___|_|
+                                                                    
+     * 
+     * 
+    */
 
+    void SocketChannel::assert_nullptr(std::string msg)const{
+        if(!this->imp){
+            throw Globals::NullPointer_Error(msg.c_str());
+        }
+    }
 
-//     AntonaStandard::Network::Socket::ProtocolType AntonaStandard::Network::Udp::LocalSocket::getProtocol()
-//         const {
-//         return ProtocolType::Dgram;
-//     }
+    SocketChannel::SocketChannel(const SocketChannel& other) {
+        this->imp = other.imp->copy();
+    }
 
-//     AntonaStandard::Network::Socket::ProtocolType AntonaStandard::Network::Udp::RemoteSocket::getProtocol()
-//         const {
-//         return ProtocolType::Dgram;
-//     }
+    SocketChannel::SocketChannel(SocketChannel&& other) {
+        using std::swap;
+        swap(this->imp,other.imp);
+    }
 
-//     size_t AntonaStandard::Network::SocketAddressImp::getAddrInSize() {
-//         return size_t();
-//     }
+    /************SocketChannelImp*********
+     * 
+     * 
+ ____             _        _    ____ _                            _ ___                 
+/ ___|  ___   ___| | _____| |_ / ___| |__   __ _ _ __  _ __   ___| |_ _|_ __ ___  _ __  
+\___ \ / _ \ / __| |/ / _ \ __| |   | '_ \ / _` | '_ \| '_ \ / _ \ || || '_ ` _ \| '_ \ 
+ ___) | (_) | (__|   <  __/ |_| |___| | | | (_| | | | | | | |  __/ || || | | | | | |_) |
+|____/ \___/ \___|_|\_\___|\__|\____|_| |_|\__,_|_| |_|_| |_|\___|_|___|_| |_| |_| .__/ 
+                                                                                 |_|    
+     * 
+     * 
+     * 
+     * 
+    */
+    void SocketChannelImp::assert_nullptr(std::string msg){
+        if(!this->manager){
+            throw Globals::NullPointer_Error(msg.c_str());
+        }    
+    }
 
-//     void AntonaStandard::Network::SocketAddressImp::setAddr(
-//         const char* ip, unsigned short port) {}
+    /************TCPSocketChannelImp*******
+     * 
+ _____ ____ ____  ____             _        _    ____ _                            _ ___                 
+|_   _/ ___|  _ \/ ___|  ___   ___| | _____| |_ / ___| |__   __ _ _ __  _ __   ___| |_ _|_ __ ___  _ __  
+  | || |   | |_) \___ \ / _ \ / __| |/ / _ \ __| |   | '_ \ / _` | '_ \| '_ \ / _ \ || || '_ ` _ \| '_ \ 
+  | || |___|  __/ ___) | (_) | (__|   <  __/ |_| |___| | | | (_| | | | | | | |  __/ || || | | | | | |_) |
+  |_| \____|_|   |____/ \___/ \___|_|\_\___|\__|\____|_| |_|\__,_|_| |_|_| |_|\___|_|___|_| |_| |_| .__/ 
+                                                                                                  |_|    
+     * 
+     * 
+    */
 
-//     std::string AntonaStandard::Network::SocketAddressImp::getIP() {
-//         return std::string();
-//     }
+    size_t TCPSocketChannelImp::read(){
+        this->assert_nullptr("TCPSocketChannelImp::read();");
+        return CPS::SocketLibraryManager::manager().receive(
+            this->getManager()->getSocketFd(),
+            this->getInBuffer()
+        );
+    }
 
-//     unsigned short AntonaStandard::Network::SocketAddressImp::getPort() {
-//         return 0;
-//     }
+    size_t TCPSocketChannelImp::write() { 
+        this->assert_nullptr("TCPSocketChannelImp::write();");
+        auto send_size = CPS::SocketLibraryManager::manager().send(
+            this->getManager()->getSocketFd(),
+            this->getOutBuffer()
+        );
+        // 清空写缓冲
+        this->getOutBuffer().clear();
+        return send_size;
+    }
 
-//     IPType AntonaStandard::Network::SocketAddressImp::getIPType() {
-//         return IPType::INVALID_IP;
-//     }
+    std::shared_ptr<SocketChannelImp> TCPSocketChannelImp::copy() {
+        return std::shared_ptr<TCPSocketChannelImp>();
+    }
 
-//     std::shared_ptr<AntonaStandard::Network::SocketAddressImp>
-//     AntonaStandard::Network::SocketAddressImp::copy() {
-//         return std::shared_ptr<SocketAddressImp>();
-//     }
+    /************UDPSocketChannelImp*****
+     * 
+ _   _ ____  ____  ____             _        _    ____ _                            _ ___                 
+| | | |  _ \|  _ \/ ___|  ___   ___| | _____| |_ / ___| |__   __ _ _ __  _ __   ___| |_ _|_ __ ___  _ __  
+| | | | | | | |_) \___ \ / _ \ / __| |/ / _ \ __| |   | '_ \ / _` | '_ \| '_ \ / _ \ || || '_ ` _ \| '_ \ 
+| |_| | |_| |  __/ ___) | (_) | (__|   <  __/ |_| |___| | | | (_| | | | | | | |  __/ || || | | | | | |_) |
+ \___/|____/|_|   |____/ \___/ \___|_|\_\___|\__|\____|_| |_|\__,_|_| |_|_| |_|\___|_|___|_| |_| |_| .__/ 
+                                                                                                   |_|    
 
-//     void AntonaStandard::Network::Socket::bind(
-//         SocketFD local_fd, const SocketAddress& local_address) {
-//         int error = ::bind(local_fd, static_cast<sockaddr*>(local_address.getAddrIn().get()),
-//                             local_address.getAddrInSize());
-//         if (error) {
-//             // result 不为0，返回错误
-//             #ifdef AntonaStandard_PLATFORM_WINDOWS
-//                 int error = WSAGetLastError();
-//             #else
-//                 int error = errno;
-//             #endif
-//             std::stringstream ss;
-//             ss << "bind error, error = " << error;
-//             throw std::runtime_error(ss.str());
-//         }
-//     }
+    */
 
-//     void AntonaStandard::Network::Socket::connect(
-//         SocketFD remote_fd, const SocketAddress& remote_address) {
-//         int error = ::connect(remote_fd, static_cast<sockaddr*>(remote_address.getAddrIn().get()),
-//                                 remote_address.getAddrInSize());
-//         if (error) {
-//             // result 不为0，返回错误
-//             #ifdef AntonaStandard_PLATFORM_WINDOWS
-//                 int error = WSAGetLastError();
-//             #else
-//                 int error = errno;
-//             #endif
-//             std::stringstream ss;
-//     }
+    size_t UDPSocketChannelImp::read(){
+        this->assert_nullptr("UDPSocketChannelImp::read();");
+        return CPS::SocketLibraryManager::manager().receiveFrom(
+            this->getManager()->getSocketFd(),
+            this->getInBuffer(),
+            this->getAddress()
+        );
+    }
+
+    size_t UDPSocketChannelImp::write() { 
+        this->assert_nullptr("UDPSocketChannelImp::write();");
+        auto send_size = CPS::SocketLibraryManager::manager().sendTo(
+            this->getManager()->getSocketFd(),
+            this->getOutBuffer(),
+            this->getAddress()
+        );
+        // 清空写缓冲
+        this->getOutBuffer().clear();
+        return send_size;
+    }
+
+    std::shared_ptr<SocketChannelImp> UDPSocketChannelImp::copy() {
+        // 除了manager其它都要进行深拷贝
+        auto ret = std::make_shared<UDPSocketChannelImp>();
+        ret->setAddress(this->getAddress());
+        ret->setManager(this->getManager());
+        return ret;
+    }
+
+    /************SocketManager***********
+     *
+ ____             _        _   __  __
+/ ___|  ___   ___| | _____| |_|  \/  | __ _ _ __   __ _  __ _  ___ _ __
+\___ \ / _ \ / __| |/ / _ \ __| |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '__|
+ ___) | (_) | (__|   <  __/ |_| |  | | (_| | | | | (_| | (_| |  __/ |
+|____/ \___/ \___|_|\_\___|\__|_|  |_|\__,_|_| |_|\__,_|\__, |\___|_|
+                                                        |___/
+     *
+     *
+    */
+
+    SocketManager::SocketManager(SocketManager&& other) {
+        CPS::SocketFd temp;
+        temp.store(other.fd.load(),std::memory_order_release);
+        other.fd.store(this->fd.load(),std::memory_order_release);
+        this->fd.store(temp.load(),std::memory_order_release);
+    }
+
+    void SocketManager::close(){
+        CPS::SocketLibraryManager::manager().close(this->fd);
+    }
+
+    SocketManager::~SocketManager() {
+        try {
+            this->close();
+        } 
+        catch (std::exception& e) {
+            std::cerr << e.what() << std::endl;
+            // 程序中断
+            std::abort();
+        }
+    }
+}

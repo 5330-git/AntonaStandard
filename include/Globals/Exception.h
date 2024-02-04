@@ -19,7 +19,7 @@
 
 
 namespace AntonaStandard{
-	namespace Utilities{
+	namespace Globals{
 		class  Uninitialization_Error;
 		class  WrongArgument_Error;
 		class  UnlawfulOperation_Error;
@@ -35,7 +35,7 @@ namespace AntonaStandard{
 }
 
 // 类的声明，和部分定义
-namespace AntonaStandard::Utilities{
+namespace AntonaStandard::Globals{
 	class Uninitialization_Error :public std::logic_error {
 	public:
 		Uninitialization_Error(const char* msg) :std::logic_error(msg) {};

@@ -12,7 +12,7 @@ namespace AntonaStandard::MultiPlatformSupport{
             unsigned long error_code = GetLastError();         // 获取错误代码，错误代码是双字类型定义为 unsigned long
             std::stringstream msgstream;
             msgstream<<"Fail to load dll \" "<<path<<"\",Error code:"<<error_code;
-            throw Utilities::FailToLoadDll_Error(msgstream.str().c_str());
+            throw Globals::FailToLoadDll_Error(msgstream.str().c_str());
         }
 
         #elif AntonaStandard_PLATFORM_LINUX
@@ -22,7 +22,7 @@ namespace AntonaStandard::MultiPlatformSupport{
             // 抛出异常：加载动态库失败
             std::stringstream msgstream;
             msgstream<<"Fail to load dll \" "<<path<<"\",Error message:"<<dlerror();
-            throw Utilities::FailToLoadDll_Error(msgstream.str().c_str());
+            throw Globals::FailToLoadDll_Error(msgstream.str().c_str());
         }
         #endif
         return handle;
@@ -42,7 +42,7 @@ namespace AntonaStandard::MultiPlatformSupport{
             unsigned long error_code = GetLastError();         // 获取错误代码，错误代码是双字类型定义为 unsigned long
             std::stringstream msgstream;
             msgstream<<"Fail to get Function: \" "<<name<<"\",Error code:"<<error_code;
-            throw Utilities::FailToGetFunction_Error(msgstream.str().c_str());
+            throw Globals::FailToGetFunction_Error(msgstream.str().c_str());
         }
         #elif AntonaStandard_PLATFORM_LINUX
             // linux 平台通过dlsym获取动态库中的导出函数
@@ -51,7 +51,7 @@ namespace AntonaStandard::MultiPlatformSupport{
             // 抛出异常：获取函数地址失败
             std::stringstream msgstream;
             msgstream<<"Fail to get Function: \" "<<name<<"\",Error message:"<<dlerror();
-            throw Utilities::FailToGetFunction_Error(msgstream.str().c_str());
+            throw Globals::FailToGetFunction_Error(msgstream.str().c_str());
         }
         #endif
         return func;
@@ -69,7 +69,7 @@ namespace AntonaStandard::MultiPlatformSupport{
             unsigned long error_code = GetLastError();         // 获取错误代码，错误代码是双字类型定义为 unsigned long
             std::stringstream msgstream;
             msgstream<<"Fail to unload Dll ,Error code:"<<error_code;
-            throw Utilities::FailToUnloadDll_Error(msgstream.str().c_str());
+            throw Globals::FailToUnloadDll_Error(msgstream.str().c_str());
         }
         #elif AntonaStandard_PLATFORM_LINUX
             // linux 平台通过dlsym获取动态库中的导出函数
@@ -77,7 +77,7 @@ namespace AntonaStandard::MultiPlatformSupport{
         if(status){
             std::stringstream msgstream;
             msgstream<<"Fail to unload Dll ,Error message:"<<dlerror();
-            throw Utilities::FailToUnloadDll_Error(msgstream.str().c_str());
+            throw Globals::FailToUnloadDll_Error(msgstream.str().c_str());
         }
         #endif
     }

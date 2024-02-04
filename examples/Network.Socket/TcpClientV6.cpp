@@ -4,7 +4,7 @@ using namespace std;
 using namespace AntonaStandard;
 int main(){
     // 创建TCP通信套接字,目标 127.0.0.1:9000
-    Network::TCPSocket sock(CPS::SocketAddress(CPS::AddressFamily::ipv4,"127.0.0.1",9000));
+    Network::TCPSocket sock(CPS::SocketAddress(CPS::AddressFamily::ipv6,"::1",9000));
     // 启动通信套接字
     sock.launch();
 

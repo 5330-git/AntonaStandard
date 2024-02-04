@@ -7,7 +7,7 @@ namespace AntonaStandard::Utilities{
             // 不存在抛出异常
             std::stringstream ss;
             ss<<"The type you create was not registered!: "<<name_str;
-            throw AntonaStandard::Utilities::NotFound_Error(ss.str().c_str());
+            throw AntonaStandard::Globals::NotFound_Error(ss.str().c_str());
         }
         return this->func_map[name_str]();              // 调用对应的回调函数
     }
@@ -18,7 +18,7 @@ namespace AntonaStandard::Utilities{
             // 不存在抛出异常
             std::stringstream ss;
             ss<<"The type you create was not registered!: "<<name_str;
-            throw AntonaStandard::Utilities::NotFound_Error(ss.str().c_str());
+            throw AntonaStandard::Globals::NotFound_Error(ss.str().c_str());
         }
         return this->func_map[name_str]();              // 调用对应的回调函数
     }

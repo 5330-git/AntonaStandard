@@ -433,8 +433,18 @@ local_socekt.sendTo(remote_address,buf);
 
 ```mermaid
 classDiagram
+class Socket{
++ bind()
++ connect()
++ listen()
++ receive()
++ send()
++ receiveFrom()
++ sendTo()
+}
 class SocketLibraryManager{
-+ 	static SocketLibraryManager& manager();
++  static SocketLibraryManager& manager();
++ SocketFD socket(IPType type,)
 +  void bind(SocketFD local_fd,const SocketAddress& local_address);
 +  void connect(SocketFD remote_fd,const SocketAddress& remote_address);
 +  void listen(SocketFD local_fd,int backlog);
@@ -444,5 +454,7 @@ class SocketLibraryManager{
 +  size_t receiveFrom(SocketFD src_fd,SocketDataBuffer& buffer,SocketAddress& remote_address);
 +  size_t sendTo(SocketFD remote_fd,const SocketDataBuffer& buffer,const SocketAddress& remote_address);
 }
+
+
 ```
 
