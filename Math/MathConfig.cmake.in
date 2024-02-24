@@ -1,0 +1,16 @@
+@PACAKGE_INIT@
+
+# 寻找依赖 TestingSupport
+include(CMakeFindDependencyMacro)
+find_dependency(
+    AntonaStandard-TestingSupport.static
+    PATHS ${CMAKE_CURRENT_LIST_DIR}/../
+)
+
+find_dependency(
+    AntonaStandard-Globals.static
+    PATHS ${CMAKE_CURRENT_LIST_DIR}/../
+)
+include(
+    ${CMAKE_CURRENT_LIST_DIR}/MathTargets.cmake
+)
