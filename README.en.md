@@ -2,121 +2,160 @@
 
 #### Introduction
 
-​	This project is in order to create an code tool box(It is a supplement of **STL**). It includes some compnents that may help developer use some special characteristics which C++ doesn't have.Such as *Delegate* , *Reflection* and so on.
+**Brief** 
+
+A basic C++ library aimed at learning the fundamental principles of C++ and CMake building. So far, it supports mathematical fractions, basic reflection mechanisms, basic delegation mechanisms, cross-platform dynamic library hot loading, cross-platform socket libraries, and high-level encapsulation of TCP-UDP sockets that support both ipv4 and ipv6. Additionally, it supports the Configure mode of CMake ’s `find_package`. Furthermore, it contains unit tests based on CTest and Google Test. The only drawback is the lack of unit test code to ensure the quality of the overall code.
+
+**Submodules** 
+
+The submodules are included in directory `third_party` . you can find more details in the file `.gitmordules` 
+
+- **Google Test** 
+  - Our project based on `1.14.x` Version of Google Test to realize unit test. And Google Test is a submodule , you can set the cmake option `-DBUILD_TESTS=ON` to enable Google Test and unit tests. The Google Test libraries will be install in the same directory where `AntonaStandard` is installed. 
+
+#### Clone the repository
+
+- you need add `--recurse-submodule` option to clone the depend submodules
+
+  ```bash
+  git clone --branch master --recurse-submodule https://gitee.com/ordinaryAnton/antona-standard.git AntonaStandard
+  ```
+
+- or you can input the following command after clone the `AntonaStandard` 
+
+  ```bash
+  git submodule update --recursive --remote
+  ```
+
+  
+
+#### Installation
+
+- Main directory of `AntonaStandard` :
+
+  ```bash
+  .
+  ├── AntonaStandardConfig.cmake.in
+  ├── AntonaStandardInfo.h.in
+  ├── CMakeLists.txt
+  ├── CPS
+  ├── Globals
+  ├── Improvement Report.md
+  ├── LICENSE
+  ├── Math
+  ├── Network
+  ├── README.en.md
+  ├── README.md
+  ├── TestingSupport
+  ├── ThreadTools
+  ├── Utilities
+  ├── cmake_uninstall.cmake.in
+  ├── docs
+  ├── testing_set
+  └── third_party
+  ```
+
+  
 
 
 
-#### Installation 
+**Linux(Ubuntu 22.04)**: 
 
-1.  You can compile or build the project by yourself according the following command(To keep the directory clean,I suggest you compile or build this project under directory `build` , the `build` directory will be ignored if you add or commit the modification to the git store in default)
+- create a directory by `mkdir` to build the project
 
-   **Linux(Ubuntu 22.04)**: 
+  ```bash
+  mkdir buildlin
+  cd buildlin
+  ```
 
-   - change your current path to project directory `build1` .Then input these commands:
+- run `cmake` 
 
-     ```bash
-     rm * -rf 	# Clear the directory at first
-     cmake ../ 	# Create Makefile script by cmake tool . avaliable item(compile the examples) -D ASD_BUILD_EXAMPLE=ON
-     make 		# Build the source files of library and example 
-     ```
+  ```bash
+  cmake .. -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=<path to install>
+  ```
 
-   - Waiting for seconds , the library files will be write in directory `lib` 
+  - `-DBUILD_EXAMPLES=ON`  : the option will enable the examples , and the example executable will generated in the `bin` of correspond component directory.
+  - `-DBUILD_TESTS=ON` : the option will enable the unit tests, and Google Test libraries will be compiled at the same time.
+  - `-DCMAKE_INSTALL_PREFIX=<path to install` : Setting the directory to install `AntonaStandard` and it's submodule
 
-   **Windows(10)**:
+- run `make` 
 
-   - Firstly, open shell tool: `PowerShell`
+  ```bash
+  make -j 16
+  ```
 
-   - change your current path to project directory `build` .Then input threse commands:
+- run unit tests
 
-     ```powershell
-     Remove-Item -Path ./* # Clear the direactory at first
-     cmake .. -G "MinGW Makefiles" # Indicate the compile tools，because cmake create VS building files in defalut under platform Windows .avaliable item(compile the examples) -D ASD_BUILD_EXAMPLE=ON
-     mingw32-make.exe # Build the project according to the Makefile script
-     ```
+  ```bash
+  make test
+  ```
 
-   3. Usage of Library file
+- install
 
-      **G++** Command
-
-      - There is a demo of g++ command to link static library file
-
-      ```bash
-      # g++ {source files name} {static library file path and its name} -I {the path of headers}
-      g++ src.cpp /AntonaStandard/lib/Linux/libSAntonaStnadard.a -I /AntonaStandard/include -o app
-      # Attention: For different platform you should choose the different library path
-      ```
-
-      - There is a demo of g++ command to link dynamic library file
-
-      ```bash
-      g++ src.cpp -L /AntonaStandard/lib/Linux/ -fDAntonaStandard -Wl.rpath=/AntonaStandard/lib/Linux/ -o app
-      # Attention: For different platform you should choose the different library path
-      ```
-
-      **CMake** script
-
-      ```cmake
-      cmake_minimum_required(VERSION 3.10)
-      project(Test)
-      
-      set(AntonaStandardPath {your AntonaStandard path})
-      # include headers direactory path
-      include_directories(${AntonaStandardPath}/include)
-      # for partial project, you should indicate the c++ standard by following command:
-      ## set(CMAKE_CXX_STANDARD 20)
-      # link the diractory of library
-      if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
-          link_directories(${AntonaStandardPath}/lib/Linux)
-      elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
-          link_directories(${AntonaStandardPath}/lib/Windows)
-      endif()
-      
-      	
-      # create excutable file by linking dynamic library
-      add_executable(dynamic_demo {your test sources file names})
-      target_link_libraries(dynamic_demo DAntonaStandard)
-      # create excutable file by linking static library
-      add_executable(static_demo {your test sources file names})
-      target_link_libraries(static_demo SAntonaStandard)
-      ```
+  ```bash
+  make install
+  ```
 
 
 
-#### Compile the Unit Tests
+- uninstall
 
-- Base on `Google Test` framework
+  ```bash
+  make uninstall
+  ```
 
-1.  Enter the directory : `testing_set` 
+  
 
-   **Linux(Ubuntu 22.04)**: 
+**Windows(10)**:
 
-   - Enter  `build1` 
+- Firstly, open shell tool: `PowerShell`
 
-     ```bash
-     cmake ..
-     make
-     ```
+- create a directory by `mkdir` to build the project
 
-   - Leave from `build1` directory and enter  `CoverageStatistic` ，execute bash shell : `CreateFromDirBuild1.sh`  which will execute the testing programs automatically.
+  ```bash
+  mkdir buildlin
+  cd buildlin
+  ```
 
-     ```bash
-     ./CreateFromDirBuild1.sh
-     ```
+- run `cmake` 
 
-   - The coverage report will be outputted into `result` 
 
-   
+- ```bash
+  cmake .. -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=<path to install>
+  ```
 
-   **Windows(10)**:
+  - `-G 'MinGW Makefiles'`  : set the building system as  Mingw
+  - `-DBUILD_EXAMPLES=ON`  : the option will enable the examples , and the example executable will generated in the `bin` of correspond component directory.
+  - `-DBUILD_TESTS=ON` : the option will enable the unit tests, and Google Test libraries will be compiled at the same time.
+  - `-DCMAKE_INSTALL_PREFIX=<path to install` : Setting the directory to install `AntonaStandard` and it's submodule
 
-   - 进入目录 `build` 
+- run `make` 
 
-     ```powershell
-     cmake .. -G 'MinGW Makefiles'
-     mingw32-make
-     ```
+  ```bash
+  mingw32-make -j 16
+  ```
 
-   - 测试程序生成路径为 `testing_set/bin/Windows`
+- run unit tests
+
+  ```bash
+  mingw32-make test
+  ```
+
+- install
+
+  ```bash
+  mingw32-make install
+  ```
+
+
+
+- uninstall
+
+  ```bash
+  mingw32-make uninstall
+  ```
+
+  
 
 #### History Versions
 
@@ -156,7 +195,9 @@
 
 2023/11/10 AntonaStandard-v-10.0.0 Import Unit test based on `Google Test` framework to promise the robustness. Replaced the raw pointer by smart pointer (`std::shared_ptr`), decrease the possibilities of memory leak. 
 
-2023/12/12 AntonaStandard-v-10.0.1 Finished the fundamental functions of UDP Communications in `MultiPlatformSupport::SocketSupport`
+2023/12/12 AntonaStandard-v-10.0.1 Finished the fundamental functions of UDP Communications in `MultiPlatformSupport::SocketSupport` 
+
+2024/2/25 AntonaStandard-v-11.0.0 Complete the support for cmake module, complete the automatic support for CTest and Google Test, and complete the TCP-UDP socket advanced encapsulation (Network component) for ipv4 and ipv6.
 
 #### Author's Blog
 

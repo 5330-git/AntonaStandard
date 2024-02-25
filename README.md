@@ -1,122 +1,217 @@
 # AntonaStandard
 
 #### 介绍
-自定义的库，里面编写了一些常用的工具
+
+**概述**
+
+C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前支持数学分数库、基础反射机制、基础委托机制、跨平台动态库热加载、跨平台套接字库封装、支持ipv4 和ipv6 的TCP-UDP套接字高级封装。构建方面支持cmake find_package 的 Configure 模式。拥有单元测试，支持 CTest 和 Google Test 拥有比较完善的单元测试构建体系，但目前单元测试代码相对匮乏，欢迎参与本项目贡献基于Google Test 的单元测试代码！😉🙌
+
+**子项目**
+
+子项目被放置在根目录中的 `thrid_party` 目录下，其它有关子项目的具体信息可以查看项目根目录的 `.gitmodules ` 文件
+
+- **Google Test** 
+  - 本项目基于 `1.14.x` 版本的Google Test 实现单元测试，而 Google Test 是以子模块的形式引入本项目的，通过设置选项 `-DBUILD_TESTS=ON  ` 可以自动构建 Google Test 并与 `AntonaStandard` 安装到同一个目录下
+
+
+
+
+
+#### 克隆仓库
+
+- 需要使用 `--recurse-submodule` 选项同时克隆依赖的模块 (Google Test)
+
+  ```bash
+  git clone --branch master --recurse-submodule https://gitee.com/ordinaryAnton/antona-standard.git AntonaStandard
+  ```
+
+- 如果忘记了添加 `--recurse-submodule` 选项，也可以等待主项目克隆完毕后，进入项目目录使用以下命令克隆子项目
+
+  ```bash
+  git submodule update --recursive --remote
+  ```
+
+  
 
 #### 安装教程
 
-1. 需要手动构建库文件,以下命令将同时对示例代码进行构建（为了保证路径的整洁，建议在build目录下构建）：
+- 项目主要目录
 
-   **Linux(Ubuntu 22.04)**: 
+  ```bash
+  .
+  ├── AntonaStandardConfig.cmake.in
+  ├── AntonaStandardInfo.h.in
+  ├── CMakeLists.txt
+  ├── CPS
+  ├── Globals
+  ├── Improvement Report.md
+  ├── LICENSE
+  ├── Math
+  ├── Network
+  ├── README.en.md
+  ├── README.md
+  ├── TestingSupport
+  ├── ThreadTools
+  ├── Utilities
+  ├── cmake_uninstall.cmake.in
+  ├── docs
+  ├── testing_set
+  └── third_party
+  ```
 
-   - 进入`build1` 目录，输入以下命令
-
-     ```bash
-     rm * -rf # 首先清空build目录
-     cmake ../ # 构建生成makefile文件，可选选项(编译示例文件) -D ASD_BUILD_EXAMPLE=ON
-     make # 执行make命令，开始构建库文件和示例文件
-     ```
-
-   - 库文件将生成到 `lib` 目录下
-
-   **Windows(10)**:
-
-   - 首先打开 `PowerShell` 
-
-   - 进入项目的`build`目录，输入以下命令
-
-     ```powershell
-     Remove-Item -Path ./* # 清空build目录
-     cmake .. -G "MinGW Makefiles" # 指定makefile的构建工具，Windows下CMake默认生成VS的构建文件。可选选项(编译示例文件) -D ASD_BUILD_EXAMPLE=ON
-     mingw32-make.exe # 更据build下的Makefile文件自动构建库文件和示例文件
-     ```
-
-2. 库文件使用方法
-
-   **G++** 命令
-
-   - 下面演示用g++链接静态库文件
-
-   ```bash
-   # g++ 源文件名 静态库路径以及文件名 -I 头文件路径
-   g++ src.cpp /AntonaStandard/lib/Linux/libSAntonaStnadard.a -I /AntonaStandard/include -o app
-   # 注意根据平台的不同选择不同的库文件
-   ```
-
-   - 下面演示用g++链接动态库文件
-
-   ```bash
-   g++ src.cpp -L /AntonaStandard/lib/Linux/ -fDAntonaStandard -Wl.rpath=/AntonaStandard/lib/Linux/ -o app
-   # 注意根据平台的不同选择不同的库文件
-   ```
-
-   **CMake** 编写示例
-
-   ```cmake
-   cmake_minimum_required(VERSION 3.10)
-   project(Test)
-   
-   set(AntonaStandardPath 填写自己下载AntonaStandard的路径)
-   # 包含头文件路径
-   include_directories(${AntonaStandardPath}/include)
-   # 对于部分库可能需要使用c++20标准
-   ## set(CMAKE_CXX_STANDARD 20)
-   # 链接库文件目录
-   if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
-       link_directories(${AntonaStandardPath}/lib/Linux)
-   elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
-       link_directories(${AntonaStandardPath}/lib/Windows)
-   endif()
-   
-   	
-   # 生成动态链接的可执行文件
-   add_executable(dynamic_demo 填写测试源文件名称)
-   target_link_libraries(dynamic_demo DAntonaStandard)
-   # 生成静态链接的可执行文件
-   add_executable(static_demo 填写测试源文件名称)
-   target_link_libraries(static_demo SAntonaStandard)
-   ```
-
-
-**另外，Windows下的示例程序可能会提示找不到动态库，可以选择将 `./bin/Windows` 下的库文件拷贝到 `bin` 目录下**
+  
 
 
 
-#### 单元测试编译
+**Linux(Ubuntu 22.04)**: 
 
-- 单元测试基于开源框架Google Test
+- 创建一个目录用于构建
 
-1.  切换到testing
+  ```bash
+  mkdir buildlin
+  cd buildlin
+  ```
 
-   **Linux(Ubuntu 22.04)**: 
+- 运行 `cmake` 
 
-   - 进入目录 `build1` 
+  ```bash
+  cmake .. -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=<path to install>
+  ```
 
-     ```bash
-     cmake ..
-     make
-     ```
+  - `-DBUILD_EXAMPLES=ON` ：允许构建示例程序，示例程序会生成在对应组件目录下的 `bin` 目录中
+  - `-DBUILD_TESTS=ON` ：允许构建单元测试，同时还会编译Google Test
+  - `-DCMAKE_INSTALL_PREFIX=<path to install` ：设置安装目录，如果不加该选项，默认安装到 `/usr/local`  目录下
 
-   - 退出`build1` 目录，进入 `CoverageStatistic` 目录，执行脚本 `CreateFromDirBuild1.sh` 。这将自动执行所有的测试程序
+- 运行 `make` 进行构建
 
-     ```bash
-     ./CreateFromDirBuild1.sh
-     ```
+  ```bash
+  make -j 16
+  ```
 
-   - 在当前目录下会生成测试代码覆盖率报告 `result` 
+- 运行单元测试 
 
-   
+  ```bash
+  make test
+  ```
 
-   **Windows(10)**:
+- 安装
 
-   - 进入目录 `build` 
+  ```bash
+  make install
+  ```
 
-     ```powershell
-     cmake .. -G 'MinGW Makefiles'
-     mingw32-make
-     ```
 
-   - 测试程序生成路径为 `testing_set/bin/Windows`
+
+- *卸载方法* 
+
+  ```bash
+  make uninstall
+  ```
+
+  
+
+**Windows(10)**:
+
+- 首先打开 `PowerShell` 
+
+- 创建一个目录用于构建
+
+  ```bash
+  mkdir buildlin
+  cd buildlin
+  ```
+
+- 运行 `cmake` 
+
+  ```bash
+  cmake .. -G 'MinGW Makefiles' -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=<path to install>
+  ```
+  
+  - `-G 'MinGW Makefiles'` ：本项目还未对其它构建系统如 `MSVC` ，`LLVM` 进行测试，暂且只确定支持 `GNU` 以及 `MinGW`  
+  - `-DBUILD_EXAMPLES=ON` ：允许构建示例程序，示例程序会生成在对应组件目录下的 `bin` 目录中
+  
+  - `-DBUILD_TESTS=ON` ：允许构建单元测试，同时还会编译Google Test
+  
+  - `-DCMAKE_INSTALL_PREFIX=<path to install` ：设置安装目录，如果不加该选项，默认安装到 `C:/Program Files (x86)/AntonaStandard`  目录下
+
+- 运行 `make` 进行构建
+
+  ```bash
+  mingw32-make -j 16
+  ```
+
+- 运行单元测试 
+
+  ```bash
+  mingw32-make test
+  ```
+
+- 安装
+
+  ```bash
+  mingw32-make install
+  ```
+
+
+
+- *卸载方法* 
+
+  ```bash
+  mingw32-make uninstall
+  ```
+
+  
+
+#### 简单使用
+
+- ```cmake
+  cmake_minimum_required(VERSION 3.15)
+  
+  # set(CMAKE_PREFIX_PATH ...../lib/cmake) 如果运行cmake时使用了-DCMAKE_INSTALL_PREFIX 选项则需要在这里设置packge查找路径
+  
+  find_package(
+      AntonaStandard
+      11.0.0
+      REQUIRED
+      Math
+      Math.static
+  )
+  
+  add_executable(demo_math_static demo_math_static.cpp)
+  add_executable(demo_math demo_math.cpp)
+  
+  target_link_libraries(
+      demo_math_static
+      PUBLIC
+      AntonaStandard::Math.static
+  )
+  
+  target_link_libraries(
+      demo_math
+      PUBLIC
+      AntonaStandard::Math
+  )
+  ```
+
+- `demo_math.cpp` 和 `demo_math_static.cpp` 
+
+  ```cpp
+  #include <iostream>
+  #include <Math/Fraction.h>
+  using namespace std;
+  using namespace AntonaStandard::Math;
+  int main(){
+      Fraction f1 = "1/2";
+      Fraction f2 = "1/3";
+      cout<<f1-f2<<endl;
+      return 0;
+  }
+  
+  ```
+
+
+
+
 
 #### 历史版本
 2022/12/30 AntonaStandard-v-1.0.0 添加了常用异常类库Exception.h和事件委托类库Delegate.h
@@ -137,7 +232,7 @@
 
 2023/3/31   AntonaStandard-v-6.0.0 添加运行时类型识别库——过滤器Filter,实现RTTI以及处理
 
-2023/4/12   AntonaStandard-v-7.0.0 添加线程并发工具库——信号量扩展，给予C++20 semaphore库，实现And信号量请求，与信号量集请求
+2023/4/12   AntonaStandard-v-7.0.0 添加线程并发工具库——信号量扩展，基于C++20 semaphore库，实现And信号量请求，与信号量集请求
 
 2023/7/9   AntonaStandard-v-7.1.0 完善了cmake构建文件，可以根据平台的不同构建不同版本的库文件和示例源文件。同时对反射库Rflection 类型过滤器Filter 信号量扩展Sem_Extension进行了一定的修改
 
@@ -156,6 +251,8 @@
 2023/11/10 AntonaStandard-v-10.0.0 引入基于Google Test 的单元测试，保障代码的健壮性。使用智能指针替代裸指针，降低内存泄漏的风险。
 
 2023/12/12 AntonaStandard-v-10.0.1 完成`MultiPlatformSupport::SocketSupport` 的UDP 基础功能
+
+2024/2/25 AntonaStandard-v-11.0.0 完成对cmake module 的支持、完成对 CTest 和 Google Test 自动支持、完成ipv4 和ipv6 的TCP-UDP套接字高级封装（Network 组件）
 
 #### 原作者博客
 

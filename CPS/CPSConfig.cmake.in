@@ -1,0 +1,11 @@
+@PACAKGE_INIT@
+
+# 当用户调用find_package 时，还需要寻找依赖包
+include(CMakeFindDependencyMacro)
+find_dependency(
+    AntonaStandard-Globals
+    PATHS ${CMAKE_CURRENT_LIST_DIR}/../
+)
+include(
+    ${CMAKE_CURRENT_LIST_DIR}/CPSTargets.cmake
+)
