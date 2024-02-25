@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.10)
+
+file(GLOB SRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+foreach(src ${SRCS})
+    get_filename_component(src_name ${src} NAME_WLE) 
+    set(src_name Network_${src_name})
+    add_executable(${src_name} ${src})
+    set_target_properties(
+        ${src_name}
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../bin
+    )
+target_link_libraries(${src_name} PUBLIC AntonaStandard::Network.static)
+endforeach()
+

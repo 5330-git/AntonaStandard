@@ -33,3 +33,12 @@ target_link_libraries(
     AntonaStandard::Globals
     ${SYSTEM_LIBS}
 )
+
+# 根据用户传入的参数决定是否构建示例
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

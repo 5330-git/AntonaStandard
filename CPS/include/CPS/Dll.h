@@ -28,7 +28,7 @@
 
 // 动态库加载与卸载函数
 namespace AntonaStandard{
-    namespace MultiPlatformSupport{
+    namespace CPS{
 
         
         #if AntonaStandard_PLATFORM_WINDOWS 

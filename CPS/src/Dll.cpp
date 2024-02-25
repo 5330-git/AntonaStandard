@@ -1,6 +1,6 @@
 #include <CPS/Dll.h>
 
-namespace AntonaStandard::MultiPlatformSupport{
+namespace AntonaStandard::CPS{
     HandlePtr_t loadDll(const char* path) { 
         HandlePtr_t handle = nullptr;
 
