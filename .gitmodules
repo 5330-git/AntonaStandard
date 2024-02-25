@@ -1,0 +1,4 @@
+[submodule "GoogleTest"]
+    path = third_party_kit/GoogleTest
+    url = "https://github.com/google/googletest.git"
+    url = "https://gitee.com/hoperun_harmony/googletest.git"
