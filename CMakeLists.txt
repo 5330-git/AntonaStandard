@@ -194,6 +194,13 @@ add_subdirectory(Utilities)
 add_subdirectory(Math)
 add_subdirectory(ThreadTools)
 
+# 配置测试（编译GoogleTest 并设置安装目录为 external）
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(third_party/GoogleTest)
+    set(GTEST_BINARY_DIR ${CMAKE_BINARY_DIR}/external/GoogleTest-build)
+    set(GTEST_INSTALL_DIR ${CMAKE_BINARY_DIR}/external/GoogleTest-install)
+endif(BUILD_TESTS)
 # 配置卸载
 
 # uninstall target
