@@ -1,5 +1,4 @@
 @PACAKGE_INIT@
-message(STATUS "cmake_current_list_dir: ${CMAKE_CURRENT_LIST_DIR}")
 include(
     ${CMAKE_CURRENT_LIST_DIR}/GlobalsTargets.cmake
 )

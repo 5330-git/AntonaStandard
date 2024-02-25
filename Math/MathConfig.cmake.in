@@ -3,12 +3,12 @@
 # 寻找依赖 TestingSupport
 include(CMakeFindDependencyMacro)
 find_dependency(
-    AntonaStandard-TestingSupport.static
+    AntonaStandard-TestingSupport
     PATHS ${CMAKE_CURRENT_LIST_DIR}/../
 )
 
 find_dependency(
-    AntonaStandard-Globals.static
+    AntonaStandard-Globals
     PATHS ${CMAKE_CURRENT_LIST_DIR}/../
 )
 include(
