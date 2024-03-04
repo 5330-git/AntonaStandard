@@ -1,6 +1,19 @@
 #ifndef NETWORK_SOCKET_H
 #define NETWORK_SOCKET_H
 
+/**
+ * @file Socket.h
+ * @author Anton (yunye_helloworld@qq.com)
+ * @brief   对套接字的面向对象封装
+ * @details
+ *      本文件基于面向对象封装了TCP的通信套接字、TCP的监听套接字、以及UDP的通信套接字。向用户提供
+ *      更加友好的进行套接字通信的方式
+ * @version 1.0.0
+ * @date 2024-03-04
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include <CPS/Socket.h>
 #include <Globals/Exception.h>
 #include <mutex>
@@ -11,6 +24,10 @@
 #include <iostream>
 
 namespace AntonaStandard{
+    /**
+     * @brief Network 组件提供常用的方便使用的网络编程相关的工具
+     * 
+     */
     namespace Network{
         class Socket;
         class TCPSocket;
@@ -27,7 +44,17 @@ namespace AntonaStandard{
 }
 
 namespace AntonaStandard::Network{
-        class SocketManager{
+    /**
+     * @brief 用于管理套接字文件描述符
+     * @details
+     *      使用了 RAII 策略一定程度上保障套接字文件描述符能够被释放。但是由于 AntonaStandard::CPS::SocketLibraryManager::close
+     *      可能抛出异常，而一般在析构函数中抛出异常可能导致内存泄漏，所以SocketManager 提供了关闭接口，允许用户处理异常
+     *      如果用户没有手动关闭套接字文件描述符，SocketManager 的析构函数会替用户做这个操作，而如果出现了异常，它会调用abort
+     *      函数中断程序，防止严重的内存泄露事故发生。另外这里将套接字文件描述符从Socket套接字对象中抽离出来单独管理，使用Pimpl策略进行访问
+     *      是为了实现一种单例，这样Socket及其派生类不需要考虑是否要禁用拷贝构造的问题，简化了设计。并且让用户使用起来更加方便
+     * 
+     */
+    class SocketManager{
     private:
         CPS::SocketFd fd;
     public:
@@ -38,15 +65,38 @@ namespace AntonaStandard::Network{
         inline const CPS::SocketFd& getSocketFd()const{
             return this->fd;
         }
-
+        /**
+         * @brief 提供给用户手动关闭套接字的接口，让用户有能力处理潜在的异常
+         * 
+         */
         void close();
         ~SocketManager();
     };
-
+    /**
+     * @brief 套接字类的基类
+     * @details
+     *      使用了 Pimpl 策略，有关套接字文件描述符的管理委托给了类 AntonaStandard::Network::SockeManager
+     *      有关通信的操作委托给了 AntonaStandard::Network::SocketChannelImp。同时还管理了一个套接字地址
+     */
     class Socket{
     private:
+        /// @brief Pimpl 策略指向文件描述符管理器实例的智能指针
         std::shared_ptr<SocketManager> manager;
+        /**
+         * @brief SocketChannelImp 原型
+         * @details
+         *      不同类型的套接字通信的手段是不同的，这里使用智能指针允许存储不同类型的套接字通道，以适应不同通信协议下的
+         *      通信需求，getChannel 函数会根据这个成员构造 SocketChannel 对象
+         * @see
+         *      virtual SocketChannel Socket::getChannel() 
+         *      用于通信的套接字需要地址对象用于指定通信目标
+         */
         std::shared_ptr<SocketChannelImp> prototype;
+        /**
+         * @brief 套接字地址
+         * @details
+         *      不同类型的套接字
+         */
         CPS::SocketAddress bind_or_remote_addr;
         std::shared_ptr<std::once_flag> flag;
     protected:

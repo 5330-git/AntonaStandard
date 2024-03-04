@@ -39,6 +39,9 @@ namespace AntonaStandard::CPS{
 std::shared_ptr<SocketAddressImp> SocketAddressImp::create(const sockaddr * addr, socklen_t addr_len){
     // 通过addr_len 构造SocketAddressImp
     std::shared_ptr<SocketAddressImp> ret;
+    if(addr == nullptr){
+        return std::make_shared<SocketAddressImp>();
+    }
     switch(addr_len){
     case sizeof(sockaddr_in):
         ret = std::make_shared<SocketAddressV4Imp>();
@@ -49,6 +52,7 @@ std::shared_ptr<SocketAddressImp> SocketAddressImp::create(const sockaddr * addr
         memcpy(ret->addr_in.get(), addr, addr_len);
         break;
     default:
+        ret = std::make_shared<SocketAddressImp>();
         break;
     }
     return  ret; // 构造一个空的SocketAddressImp
