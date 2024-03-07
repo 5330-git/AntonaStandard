@@ -479,12 +479,16 @@ namespace AntonaStandard::Network{
         /**
          * @brief 调用该接口会从远端接收数据存储到读缓冲区中
          * @return size_t 
+         * @throw
+         *      具体异常可以参照 AntonaStandard::CPS::SocketLibraryManager::receive() 和 AntonaStandard::CPS::SocketLibraryManager::receiveFrom()
          */
         virtual size_t read() = 0;
         /**
          * @brief 调用该接口会将写缓冲区中的数据发送到远端地址，发送成功会清除写缓冲区
          * 
          * @return size_t 
+         * @throw
+         *      具体异常可以参照 AntonaStandard::CPS::SocketLibraryManager::send() 和 AntonaStandard::CPS::SocketLibraryManager::sendTo()
          */
         virtual size_t write() = 0;
         
@@ -497,6 +501,9 @@ namespace AntonaStandard::Network{
          *      构造std::shared_ptr 实例，那么这个新实例由于和原来的实例不共享引用计数，可能导致悬空指针
          * 
          * @return std::shared_ptr<SocketChannelImp> 
+         * @throw
+         *      AntonaStandard::Globals::NullPointer_Error
+         *      std::runtime_error
          */
         virtual std::shared_ptr<SocketChannelImp> copy(std::shared_ptr<SocketChannelImp> src){
             // 判断src 是否为空

@@ -4,7 +4,7 @@
 
 **概述**
 
-C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前支持数学分数库、基础反射机制、基础委托机制、跨平台动态库热加载、跨平台套接字库封装、支持ipv4 和ipv6 的TCP-UDP套接字高级封装。构建方面支持cmake find_package 的 Configure 模式。拥有单元测试，支持 CTest 和 Google Test 拥有比较完善的单元测试构建体系，但目前单元测试代码相对匮乏，欢迎参与本项目贡献基于Google Test 的单元测试代码！😉🙌
+C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前支持数学分数库、基础反射机制、基础委托机制、跨平台动态库热加载、跨平台套接字库封装、支持ipv4 和ipv6 的TCP-UDP套接字高级封装。文档方面全面支持 Doxygen 文档。构建方面支持cmake find_package 的 Configure 模式。拥有单元测试，支持 CTest 和 Google Test 拥有比较完善的单元测试构建体系，但目前单元测试代码相对匮乏，欢迎参与本项目贡献基于Google Test 的单元测试代码！😉🙌
 
 **子项目**
 
@@ -12,6 +12,23 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
 
 - **Google Test**
   - 本项目基于 `1.14.x` 版本的Google Test 实现单元测试，而 Google Test 是以子模块的形式引入本项目的，通过设置选项 `-DBUILD_TESTS=ON` 可以自动构建 Google Test 并与 `AntonaStandard` 安装到同一个目录下
+
+#### 文档
+
+##### 在线文档
+
+- 文档链接: 
+
+##### 本地生成文档
+
+- `AntonaStandard` 支持 `Doxygen` 自动生成文档：
+
+  ```bash
+  # 切换到根目录
+  doxygen Doxyfile
+  ```
+
+- 文档的 html 文件会生成在 `docs/Doxygen/html` 目录下。用浏览器打开该目录中的 `index.html` 即可浏览文档
 
 #### 克隆仓库
 
@@ -62,7 +79,7 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   cd buildlin
   ```
 
-- 运行 `cmake`
+- 运行 `cmake` 命令构建项目
 
   ```bash
   cmake .. -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=<path to install>
@@ -234,6 +251,8 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
 2023/12/12 AntonaStandard-v-10.0.1 完成`MultiPlatformSupport::SocketSupport` 的UDP 基础功能
 
 2024/2/25 AntonaStandard-v-11.0.0 完成对cmake module 的支持、完成对 CTest 和 Google Test 自动支持、完成ipv4 和ipv6 的TCP-UDP套接字高级封装（Network 组件）
+
+2024/3/7 AntonaStandard-v-11.0.1 支持Doxygen 自动生成文档
 
 #### 原作者博客
 

@@ -69,7 +69,7 @@ namespace AntonaStandard{
          * @brief 加载动态库，重载版本一，接收原生C++字符串
          * @param path 动态库的相对路径（可执行程序）或绝对路径
          * @return HandlePtr_t 返回动态库的句柄，在访问完动态库后必须调用 unload 函数进行卸载
-         *  @retval 名为 <name> 的函数的函数地址
+         *  @retval 名为 'name' 的函数的函数地址
          * @throw AntonaStandard::Globals::FailToLoadDll_Error 如果指定路径的动态库加载失败
          * @see HandlePtr_t loadDll(const std::string&)
          *      unloadDll(HandlePtr_t)

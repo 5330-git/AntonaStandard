@@ -13,7 +13,7 @@ namespace AntonaStandard::ThreadTools {
                     int busy_thread_num_snapshot = this->busy_thread_num.load(std::memory_order_relaxed);
                     int tasks_num_snapshot = this->tasks.size();
                     // 判断是等待还是退出
-                    if(this->is_neeed_exit(live_thread_num_snapshot, busy_thread_num_snapshot, tasks_num_snapshot)){
+                    if(this->is_needed_exit(live_thread_num_snapshot, busy_thread_num_snapshot, tasks_num_snapshot)){
                         this->live_thread_num.fetch_sub(1, std::memory_order_release);
                         return;
                     }
@@ -121,7 +121,7 @@ namespace AntonaStandard::ThreadTools {
         }
         return false;
     }
-    bool ThreadsPool::is_neeed_exit( int live_thread_num_snapshot,
+    bool ThreadsPool::is_needed_exit( int live_thread_num_snapshot,
                                 int busy_thread_num_snapshot,
                                 int tasks_num_snapshot){
         // 判断工作线程是否应该退出

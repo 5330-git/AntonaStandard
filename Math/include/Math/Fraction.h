@@ -1,23 +1,27 @@
 #ifndef MATH_FRACTION_H
 #define MATH_FRACTION_H
-
+/**
+ * @file Fraction.h
+ * @author Anton (yunye_helloworld@qq.com)
+ * @brief 定义数学分数类
+ * @version 1.0.0
+ * @date 2024-03-07
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include <sstream>
 #include <cassert>
 #include <algorithm>
 #include <Globals/Exception.h>
 #include <TestingSupport/TestingMessageMacro.h>
 
-#define AntonaStandard_Fraction_VERSION "v-1.1.0"
-#define AntonaStandard_Fraction_EDITTIME "2023/8/8"
-#define AntonaStandard_Fraction_AUTHOR "Anton"
-
-/*
-*   Decoded by utf-8
-*   2023/2/26 v-1.0.0 初步实现
-*   2023/8/8  v-1.1.0 修改命名空间从 AntonaStandard::AntonaMath 到 AntonaStandard::Math
-*/
-
 namespace AntonaStandard{
+    /**
+     * @brief 数学组件
+     * @details
+     *      提供一些数学运算的工具
+     */
     namespace Math{
         class Fraction;
         // 运算符，友元函数声明
@@ -46,13 +50,24 @@ namespace AntonaStandard{
 }
 
 namespace AntonaStandard::Math{
-
+    /**
+     * @brief 分数类
+     * @details
+     *      支持从整数和字符串构造分数类
+     */
     class Fraction{
         TESTING_MESSAGE
     private:
-        int numerator;      // 分子
-        int denominator;    // 分母
+        int numerator;      ///< 分子
+        int denominator;    ///< 分母
     public:
+        /**
+         * @brief 欧几里得算法，计算最大公约数，用于化简分数
+         * 
+         * @param num 
+         * @param den 
+         * @return int 
+         */
         static int Euclid(int num, int den) {
             // 计算两个数的最大公因数(欧几里得算法)
             
