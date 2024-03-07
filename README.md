@@ -4,18 +4,31 @@
 
 **概述**
 
-C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前支持数学分数库、基础反射机制、基础委托机制、跨平台动态库热加载、跨平台套接字库封装、支持ipv4 和ipv6 的TCP-UDP套接字高级封装。构建方面支持cmake find_package 的 Configure 模式。拥有单元测试，支持 CTest 和 Google Test 拥有比较完善的单元测试构建体系，但目前单元测试代码相对匮乏，欢迎参与本项目贡献基于Google Test 的单元测试代码！😉🙌
+C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前支持数学分数库、基础反射机制、基础委托机制、跨平台动态库热加载、跨平台套接字库封装、支持ipv4 和ipv6 的TCP-UDP套接字高级封装。文档方面全面支持 Doxygen 文档。构建方面支持cmake find_package 的 Configure 模式。拥有单元测试，支持 CTest 和 Google Test 拥有比较完善的单元测试构建体系，但目前单元测试代码相对匮乏，欢迎参与本项目贡献基于Google Test 的单元测试代码！😉🙌
 
 **子项目**
 
-子项目被放置在根目录中的 `thrid_party` 目录下，其它有关子项目的具体信息可以查看项目根目录的 `.gitmodules ` 文件
+子项目被放置在根目录中的 `thrid_party` 目录下，其它有关子项目的具体信息可以查看项目根目录的 `.gitmodules` 文件
 
-- **Google Test** 
-  - 本项目基于 `1.14.x` 版本的Google Test 实现单元测试，而 Google Test 是以子模块的形式引入本项目的，通过设置选项 `-DBUILD_TESTS=ON  ` 可以自动构建 Google Test 并与 `AntonaStandard` 安装到同一个目录下
+- **Google Test**
+  - 本项目基于 `1.14.x` 版本的Google Test 实现单元测试，而 Google Test 是以子模块的形式引入本项目的，通过设置选项 `-DBUILD_TESTS=ON` 可以自动构建 Google Test 并与 `AntonaStandard` 安装到同一个目录下
 
+#### 文档
 
+##### 在线文档
 
+- 文档链接: 
 
+##### 本地生成文档
+
+- `AntonaStandard` 支持 `Doxygen` 自动生成文档：
+
+  ```bash
+  # 切换到根目录
+  doxygen Doxyfile
+  ```
+
+- 文档的 html 文件会生成在 `docs/Doxygen/html` 目录下。用浏览器打开该目录中的 `index.html` 即可浏览文档
 
 #### 克隆仓库
 
@@ -30,8 +43,6 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   ```bash
   git submodule update --recursive --remote
   ```
-
-  
 
 #### 安装教程
 
@@ -59,11 +70,7 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   └── third_party
   ```
 
-  
-
-
-
-**Linux(Ubuntu 22.04)**: 
+**Linux(Ubuntu 22.04)**:
 
 - 创建一个目录用于构建
 
@@ -72,7 +79,7 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   cd buildlin
   ```
 
-- 运行 `cmake` 
+- 运行 `cmake` 命令构建项目
 
   ```bash
   cmake .. -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=<path to install>
@@ -88,7 +95,7 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   make -j 16
   ```
 
-- 运行单元测试 
+- 运行单元测试
 
   ```bash
   make test
@@ -100,19 +107,15 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   make install
   ```
 
-
-
-- *卸载方法* 
+- *卸载方法*
 
   ```bash
   make uninstall
   ```
 
-  
-
 **Windows(10)**:
 
-- 首先打开 `PowerShell` 
+- 首先打开 `PowerShell`
 
 - 创建一个目录用于构建
 
@@ -121,7 +124,7 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   cd buildlin
   ```
 
-- 运行 `cmake` 
+- 运行 `cmake`
 
   ```bash
   cmake .. -G 'MinGW Makefiles' -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=<path to install>
@@ -140,7 +143,7 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   mingw32-make -j 16
   ```
 
-- 运行单元测试 
+- 运行单元测试
 
   ```bash
   mingw32-make test
@@ -152,22 +155,20 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   mingw32-make install
   ```
 
-
-
-- *卸载方法* 
+- *卸载方法*
 
   ```bash
   mingw32-make uninstall
   ```
 
-  
-
 #### 简单使用
 
-- ```cmake
+- `CMakeLists.txt`
+  
+  ```cmake
   cmake_minimum_required(VERSION 3.15)
   
-  # set(CMAKE_PREFIX_PATH ...../lib/cmake) 如果运行cmake时使用了-DCMAKE_INSTALL_PREFIX 选项则需要在这里设置packge查找路径
+  #set(CMAKE_PREFIX_PATH ...../lib/cmake) 如果运行cmake时使用了-DCMAKE_INSTALL_PREFIX 选项则需要在这里设置packge查找路径
   
   find_package(
       AntonaStandard
@@ -192,8 +193,8 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
       AntonaStandard::Math
   )
   ```
-
-- `demo_math.cpp` 和 `demo_math_static.cpp` 
+  
+- `demo_math.cpp` 和 `demo_math_static.cpp`
 
   ```cpp
   #include <iostream>
@@ -209,18 +210,15 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
   
   ```
 
-
-
-
-
 #### 历史版本
+
 2022/12/30 AntonaStandard-v-1.0.0 添加了常用异常类库Exception.h和事件委托类库Delegate.h
 
 2023/1/1     AntonaStandard-v-1.0.1 更新了Delegate.h详细请看具体文档
 
-2023/1/1	 AntonaStandard-v-1.1.0 更新了Delegate.h详细请看具体文档
+2023/1/1  AntonaStandard-v-1.1.0 更新了Delegate.h详细请看具体文档
 
-2023/1/2	 AntonaStandard-v-2.0.0 添加反射机制类库Reflection.h详细请看具体文档
+2023/1/2  AntonaStandard-v-2.0.0 添加反射机制类库Reflection.h详细请看具体文档
 
 2023/1/11   AntonaStandard-v-3.0.0 添加迭代器工具库Antona_foreach.h详细请看具体文档
 
@@ -254,8 +252,8 @@ C++ 基础库，供学习C++底层原理以及CMake构建原理使用。目前�
 
 2024/2/25 AntonaStandard-v-11.0.0 完成对cmake module 的支持、完成对 CTest 和 Google Test 自动支持、完成ipv4 和ipv6 的TCP-UDP套接字高级封装（Network 组件）
 
+2024/3/7 AntonaStandard-v-11.0.1 支持Doxygen 自动生成文档
+
 #### 原作者博客
 
-
-
-- [学艺不精的Антон的博客_CSDN博客](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343) 
+- [学艺不精的Антон的博客_CSDN博客](https://blog.csdn.net/yyy11280335?spm=1000.2115.3001.5343)

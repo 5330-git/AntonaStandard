@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(ROOT_PROJECT_NAME AntonaStandard)
-set(ROOT_PROJECT_VERSION 11.0.0)
+set(ROOT_PROJECT_VERSION 11.0.1)
 
 
 project(${ROOT_PROJECT_NAME} VERSION ${ROOT_PROJECT_VERSION})

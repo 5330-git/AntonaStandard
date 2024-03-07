@@ -86,6 +86,10 @@ namespace AntonaStandard::Network{
         return *static_cast<bool*>(val.value_ptr().get());
     }
 
+    SocketChannel Socket::getChannel(){
+        return SocketChannel(this->prototype->copy(this->prototype));
+    }
+
     /************TCPListenSocket********
      * 
  _____ ____ ____  _     _     _             ____             _        _   
@@ -200,9 +204,6 @@ namespace AntonaStandard::Network{
         );
     }
 
-    SocketChannel TCPSocket::getChannel() { 
-        return SocketChannel(this->getPrototype());
-    }
 
     /************UDPSocket***************
      * 
@@ -240,9 +241,6 @@ namespace AntonaStandard::Network{
         );
     }
 
-    SocketChannel UDPSocket::getChannel() {
-        return SocketChannel(this->getPrototype()->copy());
-    }
 
     /************SocketOptionValue******
      * 
@@ -296,7 +294,7 @@ namespace AntonaStandard::Network{
     }
 
     SocketChannel::SocketChannel(const SocketChannel& other) {
-        this->imp = other.imp->copy();
+        this->imp = other.imp->copy(other.imp);
     }
 
     SocketChannel::SocketChannel(SocketChannel&& other) {
@@ -355,9 +353,6 @@ namespace AntonaStandard::Network{
         return send_size;
     }
 
-    std::shared_ptr<SocketChannelImp> TCPSocketChannelImp::copy() {
-        return std::shared_ptr<TCPSocketChannelImp>();
-    }
 
     /************UDPSocketChannelImp*****
      * 
@@ -391,7 +386,7 @@ namespace AntonaStandard::Network{
         return send_size;
     }
 
-    std::shared_ptr<SocketChannelImp> UDPSocketChannelImp::copy() {
+    std::shared_ptr<SocketChannelImp> UDPSocketChannelImp::copy(std::shared_ptr<SocketChannelImp> src) {
         // 除了manager其它都要进行深拷贝
         auto ret = std::make_shared<UDPSocketChannelImp>();
         ret->setAddress(this->getAddress());

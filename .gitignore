@@ -16,6 +16,7 @@ bin
 .vscode
 # ignore demolib directory of Example DllSupport 忽略示例项目中DllSupport 的演示动态库
 examples/DllSupport/demolib
-
+docs/Doxygen
+*.swp
 # ignore testing code coverage result
 result

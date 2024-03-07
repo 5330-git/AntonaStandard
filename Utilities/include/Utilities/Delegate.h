@@ -1,3 +1,18 @@
+/**
+ * @file Delegate.h
+ * @author Anton (yunye_helloworld@qq.com)
+ * @brief 实现简单的事件委托
+ * @details
+ *      模拟实现了 std::function 和 std::bind 的功能
+ *      该项目更多是用于练手，研究模板编程，因为论功能和安全性都比不过 std::function 和 std::bind（std::function 可以通过异步框架保证线程安全）
+ * @warning
+ *      该事件委托线程不安全，请在必要的时刻加锁
+ * @version 0.1
+ * @date 2024-03-07
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #ifndef UTILITIES_DELEGATE_H
 #define UTILITIES_DELEGATE_H
 #include <typeinfo>
@@ -7,26 +22,6 @@
 #include <Globals/Exception.h>
 #include <TestingSupport/TestingMessageMacro.h>
 
-#define AntonaStandard_Delegate_VERSION "2.1.0"
-#define AntonaStandard_Delegate_EDIT_TIME "2023/8/8"
-#define AntonaStandard_Delegate_AUTHOR "Anton"
-
-/*
-*   Decoded by utf-8
-*   2022/12/29  1.0.0 - 初步实现事件委托，对于有返回值的函数，暂时采取其返回值弃用的操作
-*   2022/12/30  1.0.1 - 更改了函数指针容器的成员函数getSelf和createNew的声明，使之满足原型模式的命名规则clone和copy
-*                     - 修复删除委托(-=)中未找到目标时传入的参数内存泄漏的问题
-*   2023/1/1    1.1.0 - 参考了包装器std::function的模板写法，解决了原来Delegate<void,void>增加无返回值无参数类型（void(void)）型以及其它无参数类型函数报错的问题，现在正确的写法是Delegate<void()>或Delegate<void(void)>
-*                     - 添加了copy的无参数构造版本,修改了左值引用复制构造函数和左值引用赋值运算符的函数体 
-*                     - 标准库std::function与我们的BaseFuncPointerContainer实现办法类似，暂时不考虑用std::function替换我们的架构
-*   2023/1/1    2.0.0 - 通过std::remove_reference实现了将引用转化成值类型的,使得返回值为引用类型的函数的返回值得以保存
-*                     - 添加了事件委托Delegate的返回值type具体化版本，使得返回值为void的事件委托不返回线性表
-*                     - 由于返回值存到线性表中有时间成本，为返回值非void的事件委托添加了call_without_return接口，以无返回值的形式调用
-*   2023/1/2    2.0.1 - 修改了项目的宏信息
-*
-*   2023/8/8  v-2.1.0  修改命名空间从 AntonaStandard 到 AntonaStandard::Globals
-*
-*/
 
 // 前置声明：forward declaration
 namespace AntonaStandard{
@@ -43,7 +38,12 @@ namespace AntonaStandard{
         template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
         class Static_NormalFuncPointerContainer;
 
-            // 委托类，以聚合的方式多态存储保存函数指针的容器类(这里声明就可以了不需要特化)
+        /**
+         * @brief 委托类的主模板，包含两个特化模板类
+         * 
+         * @tparam type_RETURN_VALUE 
+         * @tparam type_PARAMETERS_PACK 
+         */
         template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK>
         class Delegate;
 
@@ -68,7 +68,12 @@ namespace AntonaStandard{
 // 模板类声明： declaration of template class
 
 namespace AntonaStandard::Utilities{
-    // 抽象基类
+    /**
+     * @brief 函数指针容器基类，将在其基础上派生出静态函数/普通函数 以及成员函数的容器类
+     * 
+     * @tparam type_RETURN_VALUE 
+     * @tparam type_PARAMETERS_PACK 
+     */
     template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
     class BaseFuncPointerContainer{
         TESTING_MESSAGE
@@ -76,15 +81,51 @@ namespace AntonaStandard::Utilities{
         BaseFuncPointerContainer(){};
             // 声明虚析构函数
         virtual ~BaseFuncPointerContainer(){};
-            // 判断传入的参数是否属于类型
+        /**
+         * @brief 检查当前对象的类型和参数指定的类型是否相同
+         * 
+         * @param type 
+         * @return true 
+         * @return false 
+         */
         virtual bool isType(const std::type_info& type)=0;
+        /**
+         * @brief 调用保存的函数指针的接口
+         * 
+         * @param para_args 
+         * @return type_RETURN_VALUE 
+         */
         virtual type_RETURN_VALUE call(type_PARAMETERS_PACK... para_args)=0;
+        /**
+         * @brief 判断两个容器中的函数指针是否相等
+         * 
+         * @param container_ptr 
+         * @return true 
+         * @return false 
+         */
         virtual bool equal(BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>* container_ptr)const=0;
+        /**
+         * @brief 对容器进行浅拷贝
+         * 
+         * @return BaseFuncPointerContainer* 
+         */
         inline virtual BaseFuncPointerContainer* clone()=0;
         // inline virtual BaseFuncPointerContainer* copy(const BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>& other)=0;
+        /**
+         * @brief 对容器进行深拷贝
+         * 
+         * @return BaseFuncPointerContainer* 
+         */
         inline virtual BaseFuncPointerContainer* copy()=0;
     };
     // 保存非静态成员函数指针的容器
+    /**
+     * @brief 成员函数包装
+     * 
+     * @tparam type_OBJECT 
+     * @tparam type_RETURN_VALUE 
+     * @tparam type_PARAMETERS_PACK 
+     */
     template<typename type_OBJECT,typename type_RETURN_VALUE,typename... type_PARAMETERS_PACK> 
     class MethodFuncPointerContainer:public BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>{
     public:
@@ -122,6 +163,12 @@ namespace AntonaStandard::Utilities{
     };
 
     // 保存静态成员函数和普通函数的容器类
+    /**
+     * @brief 静态成员函数和普通函数的包装容器
+     * 
+     * @tparam type_RETURN_VALUE 
+     * @tparam type_PARAMETERS_PACK 
+     */
     template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK> 
     class Static_NormalFuncPointerContainer:public BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>{
     public:
@@ -153,7 +200,14 @@ namespace AntonaStandard::Utilities{
         }
     };  
 
-    // 委托类
+    /**
+     * @brief 委托类
+     * @details
+     *      通过链表存储函数指针容器
+     * 
+     * @tparam type_RETURN_VALUE 
+     * @tparam type_PARAMETERS_PACK 
+     */
     template<typename type_RETURN_VALUE, typename... type_PARAMETERS_PACK>
     class Delegate<type_RETURN_VALUE(type_PARAMETERS_PACK...)>{
         TESTING_MESSAGE
@@ -167,22 +221,37 @@ namespace AntonaStandard::Utilities{
         DelegateList delegateList;
 
     public:
-        // 声明为虚函数，提高可拓展性
-            // 获取委托个数
+        /// @brief 获取委托数量
         inline virtual unsigned long size()const{
             return this->delegateList.size();
         }
             // 判断委托是否为空
+
+        /// @brief 判断委托调用是否为空
+        /// @return 
         inline virtual bool empty()const{
             return this->delegateList.empty();
         }
-            // 清空委托
+        /// @brief 清空委托
         virtual void clear();
+        /// @brief 添加委托
+        /// @param other_ptr 
+        /// @return 
         virtual Delegate<type_RETURN_VALUE(type_PARAMETERS_PACK...)>& operator+=(BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>* other_ptr);
+        /// @brief 移除委托
+        /// @param other_ptr 
+        /// @return 
         virtual Delegate<type_RETURN_VALUE(type_PARAMETERS_PACK...)>& operator-=(BaseFuncPointerContainer<type_RETURN_VALUE,type_PARAMETERS_PACK...>* other_ptr);
             // 多播返回值存储到一个vector中
+        /**
+         * @brief 调用所有的委托函数
+         * @details
+         *      所有委托的函数的返回值会脱去引用拷贝到一个vector对象中返回
+         * @param parama_args 
+         * @return std::vector<typename std::remove_reference<type_RETURN_VALUE>::type> 
+         */
         virtual  std::vector<typename std::remove_reference<type_RETURN_VALUE>::type> operator()(type_PARAMETERS_PACK... parama_args);
-            // 返回值如果要存到一个vector中效率较低，这里提供一个无返回值的接口
+        /// @brief 返回值如果要存到一个vector中效率较低，这里提供一个无返回值的接口
         virtual void call_without_return(type_PARAMETERS_PACK... parama_args);
 
         //  左值赋值构造函数，和赋值函数
@@ -199,7 +268,11 @@ namespace AntonaStandard::Utilities{
         virtual ~Delegate(){this->clear();};
     };
 
-    // 委托类,返回值为void的具体化版本
+    /**
+     * @brief 委托类，返回值是 void 的特化版本
+     * 
+     * @tparam type_PARAMETERS_PACK 
+     */
     template<typename... type_PARAMETERS_PACK>
     class Delegate<void(type_PARAMETERS_PACK...)>{
         TESTING_MESSAGE

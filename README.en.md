@@ -4,7 +4,7 @@
 
 **Brief** 
 
-A basic C++ library aimed at learning the fundamental principles of C++ and CMake building. So far, it supports mathematical fractions, basic reflection mechanisms, basic delegation mechanisms, cross-platform dynamic library hot loading, cross-platform socket libraries, and high-level encapsulation of TCP-UDP sockets that support both ipv4 and ipv6. Additionally, it supports the Configure mode of CMake ’s `find_package`. Furthermore, it contains unit tests based on CTest and Google Test. The only drawback is the lack of unit test code to ensure the quality of the overall code.
+A basic C++ library aimed at learning the fundamental principles of C++ and CMake building. So far, it supports mathematical fractions, basic reflection mechanisms, basic delegation mechanisms, cross-platform dynamic library hot loading, cross-platform socket libraries, and high-level encapsulation of TCP-UDP sockets that support both ipv4 and ipv6. And it supports generating documents by Doxygen automatically!   Additionally, it supports the Configure mode of CMake ’s `find_package`. Furthermore, it contains unit tests based on CTest and Google Test. The only drawback is the lack of unit test code to ensure the quality of the overall code.😉🙌
 
 **Submodules** 
 
@@ -12,6 +12,25 @@ The submodules are included in directory `third_party` . you can find more detai
 
 - **Google Test** 
   - Our project based on `1.14.x` Version of Google Test to realize unit test. And Google Test is a submodule , you can set the cmake option `-DBUILD_TESTS=ON` to enable Google Test and unit tests. The Google Test libraries will be install in the same directory where `AntonaStandard` is installed. 
+
+#### Documents
+
+##### View On line Docs
+
+- link : 
+
+
+
+##### Generate Docs locally
+
+- You can use the following command to generate documents. 
+
+  ```bash
+  # change your workspace to the top directory of AntonaStandard
+  doxygen Doxyfile
+  ```
+
+- The html files of documents will be generated into `docs/Doxygen/html` . You can find an index html file `index.html` . Find it and open it in your browser. 
 
 #### Clone the repository
 
