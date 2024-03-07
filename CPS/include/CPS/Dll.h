@@ -27,7 +27,8 @@
  *   - Linux 平台下的函数符号是默认导出的，但是可以通过编译器进行隐藏，这个宏可以让修饰的函数始终可见
  *   - Linux 平台下该宏的展开为  `__attribute__((visibility("default")))` 
  */
-#define ASD_EXPORT      
+#define ASD_EXPORT ' '
+#undef ASD_EXPORT     
 
 #if AntonaStandard_PLATFORM_WINDOWS 
     #include <Windows.h>

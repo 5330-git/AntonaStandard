@@ -13,25 +13,31 @@
 /**
  * @brief 如果该宏被定义说明此时的平台是 Windows 
  */
-#define AntonaStandard_PLATFORM_WINDOWS
+#define AntonaStandard_PLATFORM_WINDOWS 0
 /**
  * @brief 如果该宏被定义说明此时的平台是 Andorid 
  */
-#define AntonaStandard_PLATFORM_ANDROID
+#define AntonaStandard_PLATFORM_ANDROID 0
 /**
  * @brief 如果该宏被定义说明此时的平台是 Linux 
  */
 
-#define AntonaStandard_PLATFORM_LINUX
+#define AntonaStandard_PLATFORM_LINUX 0
 /**
  * @brief 如果该宏被定义说明此时的平台是 IOS  
  */
 
-#define AntonaStandard_PLATFORM_IOS
+#define AntonaStandard_PLATFORM_IOS 0
 /**
  * @brief 如果该宏被定义此时的平台未知
  */
-#define AntonaStandard_PLATFORM_UNKNOWN
+#define AntonaStandard_PLATFORM_UNKNOWN 0
+
+#undef AntonaStandard_PLATFORM_WINDOWS
+#undef AntonaStandard_PLATFORM_ANDROID
+#undef AntonaStandard_PLATFORM_LINUX
+#undef AntonaStandard_PLATFORM_IOS
+#undef AntonaStandard_PLATFORM_UNKNOWN
 
 #if defined(WIN32) || defined(_WIN32) || defined(_WIN32_) || defined(WIN64) || defined(_WIN64) || defined(_WIN64_)
     #define AntonaStandard_PLATFORM_WINDOWS 1 
